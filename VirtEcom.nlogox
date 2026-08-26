@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <model version="NetLogo 7.0.4" snapToGrid="true">
-  <code><![CDATA[;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  <code><![CDATA[;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ECONOMIC COMPLEXITY E-COMMERCE MODEL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -39,6 +39,7 @@ buyers-own [
 
 products-own [
   required-capabilities
+  product-category
   price
   quality
   complexity
@@ -138,7 +139,8 @@ to initialize-buyer
 
   let n-preferences 1 + random 3
 
-  set preferences n-of n-preferences capability-universe
+  set preferences
+      n-of n-preferences capability-universe
 
 end
 
@@ -168,18 +170,58 @@ to create-products-for-seller
       let n-required 1 + random (length my-capabilities)
 
       set required-capabilities
-        n-of n-required my-capabilities
+          n-of n-required my-capabilities
 
-      set complexity length required-capabilities
+      ;; categoría principal del producto
 
-      set quality 1 + complexity
+      set product-category
+          one-of required-capabilities
 
-      set price 50 + (complexity * 25)
+      set complexity
+          length required-capabilities
+
+      set quality
+          1 + complexity
+
+      set price
+          50 + (complexity * 25)
 
       set sales 0
 
       set seller-id [who] of myself
 
+    ]
+  ]
+
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PURCHASE PROCEDURE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+to make-purchase [chosen-product]
+
+  let p [price] of chosen-product
+
+  set budget budget - p
+
+  ask chosen-product
+  [
+    set sales sales + 1
+  ]
+
+  let seller-agent
+      one-of sellers with
+      [
+        who = [seller-id] of chosen-product
+      ]
+
+  if seller-agent != nobody
+  [
+    ask seller-agent
+    [
+      set revenue revenue + p
+      set profit profit + (0.30 * p)
     ]
   ]
 
@@ -194,39 +236,50 @@ to market-step
   ask buyers
   [
 
-    let candidate-products
-      products with
-      [
-        price <= [budget] of myself
-      ]
-
-    if any? candidate-products
-    [
-
-      let chosen-product one-of candidate-products
-
-      let p [price] of chosen-product
-
-      set budget budget - p
-
-      ask chosen-product
-      [
-        set sales sales + 1
-      ]
-
-      let seller-agent
-        one-of sellers with
+    let affordable-products
+        products with
         [
-          who = [seller-id] of chosen-product
+          price <= [budget] of myself
         ]
 
-      ask seller-agent
+    if any? affordable-products
+    [
+
+      let preferred-products
+          affordable-products with
+          [
+            member? product-category [preferences] of myself
+          ]
+
+      ;; compra preferida
+
+      if any? preferred-products
       [
-        set revenue revenue + p
-        set profit profit + (0.3 * p)
+
+        let chosen-product
+            max-one-of preferred-products
+            [
+              quality
+            ]
+
+        make-purchase chosen-product
+
+      ]
+
+      ;; si no encuentra preferencias
+
+      if not any? preferred-products
+      [
+
+        let chosen-product
+            one-of affordable-products
+
+        make-purchase chosen-product
+
       ]
 
     ]
+
   ]
 
 end
@@ -241,18 +294,23 @@ to learn-capabilities
   [
 
     let probability-learning
-      0.01 + (profit / 10000)
+        0.01 + (profit / 10000)
+
+    if probability-learning > 1
+    [
+      set probability-learning 1
+    ]
 
     if random-float 1 < probability-learning
     [
 
       let new-capability
-        one-of capability-universe
+          one-of capability-universe
 
       if not member? new-capability capability-set
       [
         set capability-set
-          lput new-capability capability-set
+            lput new-capability capability-set
       ]
 
     ]
@@ -288,26 +346,31 @@ to innovate
         fd 2
 
         let n-required
-          1 + random (length my-capabilities)
+            1 + random (length my-capabilities)
 
         set required-capabilities
-          n-of n-required my-capabilities
+            n-of n-required my-capabilities
+
+        set product-category
+            one-of required-capabilities
 
         set complexity
-          length required-capabilities
+            length required-capabilities
 
         set quality
-          complexity + 1
+            complexity + 1
 
         set price
-          50 + (complexity * 25)
+            50 + (complexity * 25)
 
         set sales 0
 
         set seller-id [who] of myself
 
       ]
+
     ]
+
   ]
 
 end
@@ -346,11 +409,12 @@ to go
 
   tick
 
-end]]></code>
+end
+]]></code>
   <widgets>
     <view x="368" wrappingAllowedX="true" y="10" frameRate="30.0" minPycor="-16" height="974" showTickCounter="true" patchSize="29.4" fontSize="10" wrappingAllowedY="true" width="974" tickCounterLabel="ticks" maxPycor="16" updateMode="0" maxPxcor="16" minPxcor="-16"></view>
     <button x="125" y="145" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
-    <button x="125" y="195" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">go</button>
+    <button x="125" y="195" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55">go</button>
   </widgets>
   <info>## WHAT IS IT?
 
