@@ -414,7 +414,42 @@ end
   <widgets>
     <view x="368" wrappingAllowedX="true" y="10" frameRate="30.0" minPycor="-16" height="974" showTickCounter="true" patchSize="29.4" fontSize="10" wrappingAllowedY="true" width="974" tickCounterLabel="ticks" maxPycor="16" updateMode="0" maxPxcor="16" minPxcor="-16"></view>
     <button x="125" y="145" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
-    <button x="125" y="195" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55">go</button>
+    <button x="125" y="195" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">go</button>
+    <plot x="1480" autoPlotX="true" yMax="10.0" autoPlotY="true" y="250" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Número de Ventas Totales">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-5298144" legend="true">
+        <setup></setup>
+        <update>plot sum [sales] of products
+</update>
+      </pen>
+    </plot>
+    <plot x="1480" autoPlotX="true" yMax="10.0" autoPlotY="true" y="430" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Ingresos Totales">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot sum [revenue] of sellers</update>
+      </pen>
+    </plot>
+    <plot x="1480" autoPlotX="true" yMax="10.0" autoPlotY="true" y="610" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Ganancias Totales">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot sum [profit] of sellers</update>
+      </pen>
+    </plot>
+    <plot x="1480" autoPlotX="true" yMax="10.0" autoPlotY="true" y="790" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Complejidad Promedio">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot mean [complexity] of sellers
+</update>
+      </pen>
+    </plot>
+    <button x="125" y="245" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55">go</button>
   </widgets>
   <info>## WHAT IS IT?
 
