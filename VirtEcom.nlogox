@@ -6,11 +6,13 @@
 
 globals [
   capability-universe
+  product-catalog
 ]
 
 breed [sellers seller]
 breed [products product]
 breed [buyers buyer]
+undirected-link-breed [offers offer]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SELLERS
@@ -22,7 +24,10 @@ sellers-own [
   profit
   reputation
   complexity
+  diversification
+  kc1
 ]
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; BUYERS
@@ -38,14 +43,18 @@ buyers-own [
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 products-own [
+  product-name
   required-capabilities
   product-category
   price
   quality
   complexity
-  seller-id
   sales
+  ubiquity
+  kp1
 ]
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SETUP
@@ -68,6 +77,24 @@ to setup
     "warehousing"
     "last-mile-delivery"
   ]
+  set product-catalog
+[
+  "Smartphone"
+  "Laptop"
+  "Tablet"
+  "Cloud-Service"
+  "ERP"
+  "CRM"
+  "Marketplace"
+  "AI-Assistant"
+  "Data-Warehouse"
+  "Payment-Gateway"
+  "Streaming"
+  "Cybersecurity"
+  "IoT-Platform"
+  "E-Commerce"
+  "Digital-Marketing"
+]
 
   create-marketplace
 
@@ -91,13 +118,13 @@ to create-marketplace
     initialize-buyer
   ]
 
-  ask sellers
-  [
-    create-products-for-seller
-  ]
+  create-global-products
+
+  connect-sellers-to-products
+
+  update-network-metrics
 
 end
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INITIALIZE SELLER
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,7 +137,7 @@ to initialize-seller
 
   setxy random-xcor random-ycor
 
-  let n-capabilities 2 + random 4
+  let n-capabilities 4 + random 4
 
   set capability-set n-of n-capabilities capability-universe
 
@@ -148,31 +175,82 @@ end
 ;; CREATE PRODUCTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-to create-products-for-seller
+;to create-products-for-seller
 
-  let my-capabilities capability-set
+ ; let my-capabilities capability-set
 
-  let n-products 1 + random 5
+;  let n-products 1 + random 5
 
-  repeat n-products
+;  repeat n-products
+;  [
+;
+;    hatch-products 1
+;    [
+;
+;      set shape "box"
+;      set color green
+;      set size 1
+;
+;      rt random 360
+;      fd 2
+;
+;      let n-required 1 + random (length my-capabilities)
+;
+;      set required-capabilities
+;          n-of n-required my-capabilities
+;
+      ;; categoría principal del producto
+;
+;      set product-category
+;          one-of required-capabilities
+;
+;      set complexity
+;          length required-capabilities
+;
+;      set quality
+;          1 + complexity
+;
+;      set price
+;          50 + (complexity * 25)
+;
+;      set sales 0
+;
+;      set seller-id [who] of myself
+;      create-offer-with myself
+;[
+;  set color gray
+;]
+;
+;
+;
+;   ]
+;  ]
+;
+;end
+
+to create-global-products
+
+  foreach product-catalog
   [
 
-    hatch-products 1
+    pname ->
+
+    create-products 1
     [
+
+      set product-name pname
 
       set shape "box"
       set color green
-      set size 1
+      set size 1.5
 
-      rt random 360
-      fd 2
+      setxy random-xcor random-ycor
 
-      let n-required 1 + random (length my-capabilities)
+      let n-required
+          2 + random 4
 
       set required-capabilities
-          n-of n-required my-capabilities
-
-      ;; categoría principal del producto
+          n-of n-required capability-universe
 
       set product-category
           one-of required-capabilities
@@ -181,14 +259,14 @@ to create-products-for-seller
           length required-capabilities
 
       set quality
-          1 + complexity
+          complexity + 1
 
       set price
-          50 + (complexity * 25)
+          50 + complexity * 25
 
       set sales 0
 
-      set seller-id [who] of myself
+      set ubiquity 0
 
     ]
   ]
@@ -211,10 +289,7 @@ to make-purchase [chosen-product]
   ]
 
   let seller-agent
-      one-of sellers with
-      [
-        who = [seller-id] of chosen-product
-      ]
+      one-of [link-neighbors] of chosen-product
 
   if seller-agent != nobody
   [
@@ -321,6 +396,32 @@ to learn-capabilities
 
 end
 
+; Vendor-Product Connection
+to connect-sellers-to-products
+
+  ask sellers
+  [
+
+    let my-capabilities capability-set
+
+    ask products
+    [
+
+      if is-subset? required-capabilities my-capabilities
+      [
+
+        create-offer-with myself
+        [
+          set color gray
+        ]
+
+      ]
+
+    ]
+
+  ]
+
+end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INNOVATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -330,42 +431,23 @@ to innovate
   ask sellers
   [
 
-    if random-float 1 < 0.03
+    let my-capabilities capability-set
+
+    ask products
     [
 
-      let my-capabilities capability-set
-
-      hatch-products 1
+      if not link-neighbor? myself
       [
 
-        set shape "box"
-        set color yellow
-        set size 1
+        if is-subset? required-capabilities my-capabilities
+        [
 
-        rt random 360
-        fd 2
+          create-offer-with myself
+          [
+            set color yellow
+          ]
 
-        let n-required
-            1 + random (length my-capabilities)
-
-        set required-capabilities
-            n-of n-required my-capabilities
-
-        set product-category
-            one-of required-capabilities
-
-        set complexity
-            length required-capabilities
-
-        set quality
-            complexity + 1
-
-        set price
-            50 + (complexity * 25)
-
-        set sales 0
-
-        set seller-id [who] of myself
+        ]
 
       ]
 
@@ -393,6 +475,64 @@ to update-colors
 
 end
 
+; UPDATE NETWORK METRICS
+to update-network-metrics
+
+  ask sellers
+  [
+    set diversification count my-offers
+  ]
+
+  ask products
+  [
+    set ubiquity count my-offers
+  ]
+
+end
+
+to update-reflections
+
+  ask sellers
+  [
+
+    ifelse any? my-offers
+    [
+      set kc1
+        mean [ubiquity]
+        of link-neighbors
+    ]
+    [
+      set kc1 0
+    ]
+
+  ]
+
+  ask products
+  [
+
+    ifelse any? my-offers
+    [
+      set kp1
+        mean [diversification]
+        of link-neighbors
+    ]
+    [
+      set kp1 0
+    ]
+
+  ]
+
+end
+
+to-report is-subset? [small-set big-set]
+
+  report empty?
+         filter
+         [ x -> not member? x big-set ]
+         small-set
+
+end
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -404,6 +544,10 @@ to go
   learn-capabilities
 
   innovate
+
+  update-network-metrics
+
+  update-reflections
 
   update-colors
 
@@ -450,6 +594,7 @@ end
       </pen>
     </plot>
     <button x="125" y="245" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55">go</button>
+    <monitor x="1715" precision="17" y="250" height="60" fontSize="11" width="100" display="Diversificación Promedio">mean [diversification] of sellers</monitor>
   </widgets>
   <info>## WHAT IS IT?
 
