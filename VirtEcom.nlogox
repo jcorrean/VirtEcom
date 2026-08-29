@@ -582,6 +582,8 @@ end
     </plot>
     <slider x="50" step="5" y="415" max="100" width="250" display="Number-of-Products" height="50" min="5" direction="Horizontal" default="15.0" variable="Number-of-Products"></slider>
     <monitor x="1335" precision="17" y="75" height="60" fontSize="11" width="135" display="Ubicuidad Promedio">mean [ubiquity] of products</monitor>
+    <monitor x="1335" precision="17" y="140" height="60" fontSize="11" width="100" display="Matrix Density">(count offers) /
+(count sellers * count products)</monitor>
   </widgets>
   <info>## WHAT IS IT?
 
