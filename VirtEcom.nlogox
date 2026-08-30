@@ -589,14 +589,16 @@ end
     <monitor x="1335" precision="17" y="270" height="60" fontSize="11" width="100" display="kp1 promedio">mean [kp1] of products</monitor>
     <monitor x="1335" precision="17" y="335" height="60" fontSize="11" width="100" display="kc1 promedio">mean [kc1] of sellers</monitor>
   </widgets>
-  <info><![CDATA[## WHAT IS IT?
+  <info><![CDATA[## VirtECom 1.0
 
-VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces through interactions among sellers, buyers, products, and capabilities. In Economic Complexity Theory, diversification and ubiquity are considered indirect indicators of the productive capabilities embedded within an economic system. This model integrates the following concepts from:
+**An Agent-Based Model of Economic Complexity in Digital Marketplaces**
+
+VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces through interactions among sellers, buyers, products, and capabilities. In Economic Complexity Theory, diversification and ubiquity are considered indirect indicators of the productive capabilities embedded within an economic system. The model is based on the following theoretical sources:
 
 - Economic Complexity Theory (Hidalgo & Hausmann, 2009)
-- Evolutionary Economics
-- Digital Marketplaces
-- Agent-Based Modeling
+- Evolutionary and Neo-Schumpeterian Economics (Bruun, 2003; Pyka & Fagiolo, 2007)
+- Digital Marketplace Agent-Based Models (Li et al., 2025)
+- Innovation Systems and Knowledge-Based Dynamics (Antonelli & Ferraris, 2011)
 
 Inspired by Hidalgo and Hausmann's framework, VirtECom reinterprets the traditional Country-Product network as a Seller-Product network. Sellers possess capabilities that determine the products they can offer, while buyers generate demand through preferences and purchasing decisions.
 
@@ -629,6 +631,20 @@ VirtECom should be interpreted as a proof-of-concept model. Current limitations 
 - Knowledge spillovers between sellers are not represented.
 - Consumer attention constraints are not modeled.
 - The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
+
+## RESEARCH QUESTIONS
+
+VirtECom was designed to explore the following questions:
+
+1. Can mechanisms commonly associated with Economic Complexity Theory emerge in digital marketplaces?
+
+2. How does the structure of seller capabilities influence product diversification and ubiquity?
+
+3. Does buyer demand indirectly affect structural complexity through capability accumulation?
+
+4. How do changes in the numbers of sellers, buyers, and products alter the properties of the seller-product network?
+
+5. Can marketplaces exhibit complexity-related dynamics similar to those observed in national economies?
 
 ## HOW IT WORKS
 
@@ -675,7 +691,7 @@ A seller-product link is formed whenever:
 
 RequiredCapabilities ⊆ SellerCapabilities
 
-This bipartite structure serves as the analog of the Country-Product matrix commonly used in Economic Complexity research introduced by Hidalgo and Hausmann (2009).
+A seller-product link does not represent a transaction. It represents the capability of a seller to offer a product given its current capability portfolio. This bipartite structure serves as the analog of the Country-Product matrix commonly used in Economic Complexity research introduced by Hidalgo and Hausmann (2009).
 
 KC1 = Mean ubiquity of products connected to a seller.
 
@@ -815,9 +831,15 @@ Future versions will investigate how combinations of scarce and complementary ca
 
 ## CREDITS AND REFERENCES
 
+Antonelli, C., & Ferraris, G. (2011). Innovation as an emerging system property: an agent based simulation model. *Journal of Artificial Societies and Social Simulation, 14*(2), 1. https://jasss.soc.surrey.ac.uk/14/2/1.html
+
+Bruun, C. (2003). The Economy as an Agent-Based Whole-Simulating Schumpetarian Dynamics, *Industry and Innovation, 10*(4), 475-491 https://doi.org/10.1080/1366271032000163694
+
 Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the national academy of sciences, 106*(26), 10570-10575.
 
-Pyka, A., & Fagiolo, G. (2007). 29 Agent-based modelling: A methodology for neo-Schumpeterian economics'. In Hanusch, H. and Pyka, A. (Eds). *Elgar companion to neo-Schumpeterian economics,* (pp. 467 – 492), Edward Elgar Publishing, Cheltenham, UK]]></info>
+Li, T., Wang, S., Zhou, D. & Razzaq, A. (2025). Consumer attention and market concentration in e‑commerce: an agent‑based perspective, *Journal of Economic Interaction and Coordination, 20* 959–985 https://doi.org/10.1007/s11403-025-00443-5
+
+Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Schumpeterian economics'. In Hanusch, H. and Pyka, A. (Eds). *Elgar companion to neo-Schumpeterian economics,* (pp. 467 – 492), Edward Elgar Publishing, Cheltenham, UK]]></info>
   <turtleShapes>
     <shape name="default" rotatable="true" editableColorIndex="0">
       <polygon color="-1920102913" filled="true" marked="true">
