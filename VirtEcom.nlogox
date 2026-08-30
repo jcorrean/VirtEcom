@@ -63,6 +63,7 @@ to setup
 
   clear-all
 
+
   set capability-universe
   [
     "logistics"
@@ -584,6 +585,9 @@ end
     <monitor x="1335" precision="17" y="75" height="60" fontSize="11" width="135" display="Ubicuidad Promedio">mean [ubiquity] of products</monitor>
     <monitor x="1335" precision="17" y="140" height="60" fontSize="11" width="100" display="Matrix Density">(count offers) /
 (count sellers * count products)</monitor>
+    <monitor x="1335" precision="17" y="205" height="60" fontSize="11" width="100" display="Conexiones">count offers</monitor>
+    <monitor x="1335" precision="17" y="270" height="60" fontSize="11" width="100" display="kp1 promedio">mean [kp1] of products</monitor>
+    <monitor x="1335" precision="17" y="335" height="60" fontSize="11" width="100" display="kc1 promedio">mean [kc1] of sellers</monitor>
   </widgets>
   <info>## WHAT IS IT?
 
@@ -1455,4 +1459,37 @@ end
     </shape>
   </linkShapes>
   <previewCommands>setup repeat 75 [ go ]</previewCommands>
+  <experiments>
+    <experiment name="test27" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <exitCondition><![CDATA[ticks >= 500]]></exitCondition>
+      <metrics>
+        <metric>mean [diversification] of sellers</metric>
+        <metric>mean [ubiquity] of products</metric>
+        <metric>mean [kc1] of sellers</metric>
+        <metric>mean [kp1] of products</metric>
+        <metric>count offers</metric>
+        <metric>(count offers) / (count sellers * count products)</metric>
+        <metric>mean [complexity] of sellers</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="Number-of-Sellers">
+          <value value="20"></value>
+          <value value="50"></value>
+          <value value="100"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Customers">
+          <value value="20"></value>
+          <value value="100"></value>
+          <value value="500"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Products">
+          <value value="10"></value>
+          <value value="25"></value>
+          <value value="50"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+  </experiments>
 </model>
