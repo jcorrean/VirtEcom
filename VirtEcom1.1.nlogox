@@ -924,10 +924,39 @@ VirtECom 1.1 makes use of:
 
 
 ## EXPERIMENTAL FINDINGS OF THIS VERSION
+BehaviorSpace experiments were conducted using:
+
+Sellers = {20, 50, 100}
+Customers = {20, 100, 500}
+Products = {10, 25, 50}
+
+with ten stochastic replications per configuration.
+
+Results suggest that the introduction of rare capabilities and complementary capability bundles substantially alters the initial structure of the seller-product network. Pilot experiments showed that many products were initially infeasible and that network density began at very low levels.
+
+However, adaptive learning progressively increased seller complexity and expanded the feasible product space. Across all experimental configurations, products without eligible sellers disappeared by the end of the simulations, indicating that capability accumulation transformed initially infeasible products into feasible products.
+
+Network density generally increased over time rather than remaining sparse. Thus, VirtECom 1.1 does not generate permanently low-density networks. Instead, it generates an endogenous process of network expansion driven by capability accumulation and adaptive learning.
+
+The experiments also revealed that rare capabilities tend to diffuse throughout the seller population because all capabilities remain equally learnable. Consequently, capability scarcity acts primarily as an initial condition rather than a persistent structural constraint.
+
+The experiments also revealed that capability accumulation progressively reduced structural constraints in the marketplace. Products that were initially infeasible became feasible as sellers acquired additional capabilities through learning.
 
 
 ## RELATED MODELS
+VirtECom 1.1 combines concepts that are typically studied separately in the literature.
 
+**Economic Complexity Models**
+
+VirtECom is conceptually inspired by the Economic Complexity framework of Hidalgo and Hausmann (2009), where productive capabilities shape diversification and economic structure. The model reinterprets the traditional Country-Product matrix as a Seller-Product network.
+
+**Evolutionary and Neo-Schumpeterian Models**
+
+VirtECom is related to evolutionary models that emphasize learning, adaptation, capability accumulation, and path dependence. In particular, the model shares similarities with Neo-Schumpeterian Agent-Based Models that investigate innovation and structural change.
+
+**Digital Marketplace Models**
+
+VirtECom also relates to Agent-Based Models of digital marketplaces that explore buyer preferences, product choice, and market structure. Unlike most marketplace models, VirtECom explicitly incorporates capability-based production constraints and Economic Complexity indicators.
 
 
 ## CREDITS AND REFERENCES
@@ -1776,7 +1805,7 @@ Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Sch
   </linkShapes>
   <previewCommands>setup repeat 75 [ go ]</previewCommands>
   <experiments>
-    <experiment name="test27" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <experiment name="test27" repetitions="10" sequentialRunOrder="false" runMetricsEveryStep="false">
       <setup>setup</setup>
       <go>go</go>
       <exitCondition><![CDATA[ticks >= 500]]></exitCondition>
