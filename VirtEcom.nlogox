@@ -572,7 +572,7 @@ end
       </pen>
     </plot>
     <monitor x="1335" precision="17" y="10" height="60" fontSize="11" width="135" display="Diversificación Promedio">mean [diversification] of sellers</monitor>
-    <plot x="1100" autoPlotX="true" yMax="10.0" autoPlotY="true" y="10" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Total of sales">
+    <plot x="1100" autoPlotX="true" yMax="10.0" autoPlotY="true" y="10" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Total Number of Sales">
       <setup></setup>
       <update></update>
       <pen interval="1.0" mode="0" display="default" color="-5298144" legend="true">
