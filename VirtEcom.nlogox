@@ -593,7 +593,7 @@ end
 
 **An Agent-Based Model of Economic Complexity in Digital Marketplaces**
 
-VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces through interactions among sellers, buyers, products, and capabilities. In Economic Complexity Theory, diversification and ubiquity are considered indirect indicators of the productive capabilities embedded within an economic system. The model is based on the following theoretical sources:
+VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces. While Economic Complexity studies traditionally analyze Country-Product networks, VirtECom investigates whether analogous patterns arise in Seller-Product networks driven by buyer demand, capability accumulation, and adaptive learning. The model is based on the following theoretical sources:
 
 - Economic Complexity Theory (Hidalgo & Hausmann, 2009)
 - Evolutionary and Neo-Schumpeterian Economics (Bruun, 2003; Pyka & Fagiolo, 2007)
@@ -601,8 +601,6 @@ VirtECom explores whether mechanisms commonly associated with Economic Complexit
 - Innovation Systems and Knowledge-Based Dynamics (Antonelli & Ferraris, 2011)
 
 Inspired by Hidalgo and Hausmann's framework, VirtECom reinterprets the traditional Country-Product network as a Seller-Product network. Sellers possess capabilities that determine the products they can offer, while buyers generate demand through preferences and purchasing decisions.
-
-While Economic Complexity studies traditionally analyze Country-Product networks, VirtECom explores whether analogous patterns arise in Seller-Product networks driven by buyer demand, capability accumulation, and adaptive learning.
 
 The model seeks to understand how market structure, product diversity, and buyer demand affect the emergence of complexity-related indicators such as diversification, ubiquity, and first-order reflections.
 
