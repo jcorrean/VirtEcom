@@ -6,7 +6,11 @@
 
 globals [
   capability-universe
+  common-capabilities
+  rare-capabilities
+  product-templates
 ]
+
 
 breed [sellers seller]
 breed [products product]
@@ -63,6 +67,47 @@ to setup
 
   clear-all
 
+
+  set product-templates
+[
+ ["BasicCommerce"
+   ["marketing" "payments"]]
+
+ ["Fulfillment"
+   ["logistics" "warehousing"]]
+
+ ["Marketplace"
+   ["marketing"
+    "payments"
+    "supplier-network"]]
+
+ ["CloudService"
+   ["cloud-computing"
+    "data-analytics"]]
+
+ ["AIService"
+   ["cloud-computing"
+    "data-analytics"
+    "ai-recommendation"]]
+]
+
+  set common-capabilities
+[
+ "logistics"
+ "marketing"
+ "payments"
+ "customer-service"
+ "supplier-network"
+ "warehousing"
+ "last-mile-delivery"
+]
+  
+  set rare-capabilities
+[
+ "data-analytics"
+ "cloud-computing"
+ "ai-recommendation"
+]
 
   set capability-universe
   [
@@ -121,9 +166,12 @@ to initialize-seller
 
   setxy random-xcor random-ycor
 
-  let n-capabilities 4 + random 4
+  
 
-  set capability-set n-of n-capabilities capability-universe
+set capability-set
+    sentence
+    (n-of (2 + random 3) common-capabilities)
+    (n-of (random 3) rare-capabilities)
 
   set revenue 0
   set profit 0
@@ -229,11 +277,13 @@ to create-global-products
 
     setxy random-xcor random-ycor
 
-    let n-required
-      2 + random 4
+    let template
+    one-of product-templates
 
-    set required-capabilities
-      n-of n-required capability-universe
+set required-capabilities
+    item 1 template
+
+
 
     set product-category
       one-of required-capabilities
@@ -543,7 +593,7 @@ end
     <view x="368" wrappingAllowedX="true" y="10" frameRate="30.0" minPycor="-16" height="729" showTickCounter="true" patchSize="26.364" fontSize="10" wrappingAllowedY="true" width="729" tickCounterLabel="ticks" maxPycor="16" updateMode="0" maxPxcor="16" minPxcor="-16"></view>
     <button x="125" y="195" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">go</button>
     <button x="125" y="245" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55">go</button>
-    <slider x="50" step="1" y="300" max="200" width="250" display="Number-of-Sellers" height="50" min="10" direction="Horizontal" default="48.0" variable="Number-of-Sellers"></slider>
+    <slider x="50" step="1" y="300" max="200" width="250" display="Number-of-Sellers" height="50" min="10" direction="Horizontal" default="20.0" variable="Number-of-Sellers"></slider>
     <slider x="50" step="20" y="360" max="1000" width="250" display="Number-of-Customers" height="50" min="20" direction="Horizontal" default="20.0" variable="Number-of-Customers"></slider>
     <button x="125" y="145" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
     <plot x="1100" autoPlotX="true" yMax="10.0" autoPlotY="true" y="190" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Revenue">
@@ -581,19 +631,80 @@ end
 </update>
       </pen>
     </plot>
-    <slider x="50" step="5" y="415" max="100" width="250" display="Number-of-Products" height="50" min="5" direction="Horizontal" default="15.0" variable="Number-of-Products"></slider>
+    <slider x="50" step="5" y="415" max="100" width="250" display="Number-of-Products" height="50" min="5" direction="Horizontal" default="10.0" variable="Number-of-Products"></slider>
     <monitor x="1335" precision="17" y="75" height="60" fontSize="11" width="135" display="Ubicuidad Promedio">mean [ubiquity] of products</monitor>
     <monitor x="1335" precision="17" y="140" height="60" fontSize="11" width="100" display="Matrix Density">(count offers) /
 (count sellers * count products)</monitor>
     <monitor x="1335" precision="17" y="205" height="60" fontSize="11" width="100" display="Conexiones">count offers</monitor>
     <monitor x="1335" precision="17" y="270" height="60" fontSize="11" width="100" display="kp1 promedio">mean [kp1] of products</monitor>
     <monitor x="1335" precision="17" y="335" height="60" fontSize="11" width="100" display="kc1 promedio">mean [kc1] of sellers</monitor>
+    <monitor x="1335" precision="17" y="400" height="60" fontSize="11" width="100" display="AI">count sellers with
+[
+ member? "ai-recommendation"
+         capability-set
+]</monitor>
+    <monitor x="1335" precision="17" y="465" height="60" fontSize="11" width="100" display="Cloud Computing">count sellers with
+[
+ member? "cloud-computing"
+         capability-set
+]</monitor>
+    <monitor x="1440" precision="17" y="140" height="60" fontSize="11" width="100" display="Products 0">count products with
+[
+ count my-offers = 0
+]</monitor>
+    <monitor x="1440" precision="17" y="205" height="60" fontSize="11" width="100" display="Sellers 0">count sellers with
+[
+ count my-offers = 0
+]</monitor>
+    <plot x="1440" autoPlotX="true" yMax="10.0" autoPlotY="true" y="270" xMin="0.0" height="175" legend="false" xMax="500.0" yMin="0.0" width="230" xAxis="ticks" display="AI">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot count sellers with
+[
+ member? "ai-recommendation"
+ capability-set
+]
+
+</update>
+      </pen>
+    </plot>
+    <plot x="1440" autoPlotX="true" yMax="10.0" autoPlotY="true" y="450" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Cloud">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot count sellers with
+[
+  member? "cloud-computing" capability-set
+]</update>
+      </pen>
+    </plot>
+    <plot x="1675" autoPlotX="true" yMax="10.0" autoPlotY="true" yAxis="Avg. Complexity" y="450" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" xAxis="ticks" display="Mean Complexity">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot mean [complexity] of sellers</update>
+      </pen>
+    </plot>
+    <plot x="1675" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="Density" y="270" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" xAxis="Ticks" display="Density">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>plot count offers /
+     (count sellers * count products)
+</update>
+      </pen>
+    </plot>
   </widgets>
-  <info><![CDATA[## VirtECom 1.0
+  <info><![CDATA[## VirtECom 1.1
 
-**An Agent-Based Model of Economic Complexity in Digital Marketplaces**
+**An Agent-Based Model of Economic Complexity in Digital Marketplaces with Rare Capabilities and Complementary Products**
 
-VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces. While Economic Complexity studies traditionally analyze Country-Product networks, VirtECom investigates whether analogous patterns arise in Seller-Product networks driven by buyer demand, capability accumulation, and adaptive learning. The model is based on the following theoretical sources:
+VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces through interactions among sellers, buyers, products, and capabilities. In Economic Complexity Theory, diversification and ubiquity are considered indirect indicators of the productive capabilities embedded within an economic system. The model is based on the following theoretical sources:
 
 - Economic Complexity Theory (Hidalgo & Hausmann, 2009)
 - Evolutionary and Neo-Schumpeterian Economics (Bruun, 2003; Pyka & Fagiolo, 2007)
@@ -602,34 +713,48 @@ VirtECom explores whether mechanisms commonly associated with Economic Complexit
 
 Inspired by Hidalgo and Hausmann's framework, VirtECom reinterprets the traditional Country-Product network as a Seller-Product network. Sellers possess capabilities that determine the products they can offer, while buyers generate demand through preferences and purchasing decisions.
 
-The model seeks to understand how market structure, product diversity, and buyer demand affect the emergence of complexity-related indicators such as diversification, ubiquity, and first-order reflections.
+VirtECom 1.1 extends the original model by introducing rare capabilities and complementary capability requirements. Unlike VirtECom 1.0, where all capabilities were equally likely and products required randomly selected capabilities, Version 1.1 distinguishes between common and rare capabilities and introduces predefined capability bundles that represent complementary production requirements.
+
+These additions allow the model to investigate how initial capability scarcity affects network formation, product feasibility, and the subsequent expansion of the seller-product network through adaptive learning.
 
 **ASSUMPTIONS**
 This model is based on the following simplifying assumptions:
 
-- All capabilities are equally likely to appear.
-- All capabilities are equally valuable.
-- Sellers initially possess between 4 and 7 capabilities.
-- Products require between 2 and 5 capabilities.
-- Capabilities can be acquired but cannot be lost.
+- Capabilities are heterogeneous and differ in their initial prevalence.
+- Capabilities are divided into common and rare capabilities.
+- Rare capabilities are initially less common than operational and commercial capabilities.
+- All capabilities are equally valuable once acquired.
+- Sellers initially possess between two and six capabilities drawn from common and rare capability pools.
+- Products are generated from predefined complementary capability bundles.
+- Sellers can offer a product only if they possess all of the capabilities required by that product.
+- Capabilities can be acquired through learning but cannot be lost.
 - Sellers never leave the marketplace.
-- Products never disappear.
+- Products never disappear from the marketplace.
 - Seller-product links can be created but cannot be removed.
 - Learning occurs internally and not through knowledge spillovers.
+- Buyers search for products using preference matching and budget constraints.
+- Product quality and price are determined by the complexity of the capability bundle required by the product.
+- Capability accumulation may increase the number of products that a seller is able to offer over time.
 
-**Known Limitations**
+
+**KNOWN LIMITATIONS**
 
 VirtECom should be interpreted as a proof-of-concept model. Current limitations include:
 
-- Capabilities are homogeneous and equally likely.
-- Capability complementarities are not represented.
-- Seller-product networks tend to be denser than empirical Country-Product networks.
-- Capabilities can be acquired but not lost.
-- Sellers cannot fail or exit the marketplace.
+- Capability rarity only affects initial conditions; all capabilities remain equally learnable during the simulation.
+- Capability complementarities are represented through fixed capability bundles rather than empirically calibrated production structures.
+- Capabilities can be acquired but cannot be lost.
+- Sellers cannot fail, exit the marketplace, or become inactive.
+- Products cannot disappear from the marketplace once created.
+- Seller-product links can be created but cannot be removed.
 - Knowledge spillovers between sellers are not represented.
 - Consumer attention constraints are not modeled.
+- Capability acquisition is driven by a simple profit-based learning mechanism and does not incorporate organizational learning, training investments, or technological barriers.
+- Rare capabilities may become increasingly common over time because learning does not distinguish between common and rare capabilities.
+- The model currently represents seller complexity as the number of capabilities possessed by a seller rather than as an Economic Complexity Index (ECI)-like measure.
+- Product capability bundles are stylized and intended for theoretical exploration rather than empirical representation of specific industries.
 - The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
-
+- The seller-product network may still become denser than empirical Country-Product networks as capabilities accumulate through learning.
 ## RESEARCH QUESTIONS
 
 VirtECom was designed to explore the following questions:
@@ -644,13 +769,20 @@ VirtECom was designed to explore the following questions:
 
 5. Can marketplaces exhibit complexity-related dynamics similar to those observed in national economies?
 
+6. How do rare capabilities influence the initial density of seller-product networks?
+
+7. Can capability accumulation transform initially infeasible products into feasible products over time?
+
+8. How do complementary capability requirements affect diversification, ubiquity, and network expansion?
+
+
 ## HOW IT WORKS
 
 VirtECom contains three classes of agents:
 
 **Sellers**
 
-Sellers possess capabilities and can offer products if they have all the capabilities required by a product. Seller complexity is operationalized as the number of capabilities currently possessed by a seller.
+Sellers possess capabilities and can offer products if they have all the capabilities required by a product. Seller complexity is operationalized as the number of capabilities currently possessed by a seller. Capabilities are divided into common and rare capabilities. Sellers typically begin with several common capabilities and only a small number of rare capabilities.
 
 Each seller maintains:
 
@@ -663,7 +795,7 @@ Each seller maintains:
 
 **Products**
 
-Products require specific capabilities. Each product maintains:
+Products are generated from predefined complementary capability bundles. These bundles represent stylized combinations of capabilities that sellers must possess in order to offer a product. Each product maintains:
 
 - Required capabilities
 - Product category
@@ -685,7 +817,7 @@ Buyers search for products that match their preferences and budget constraints.
 
 **Bipartite Network Formation**
 
-A seller-product link is formed whenever:
+In VirtECom 1.1, many products are initially infeasible because sellers may lack one or more rare capabilities. As sellers learn and accumulate capabilities, new seller-product links may emerge. A seller-product link is formed whenever:
 
 RequiredCapabilities ⊆ SellerCapabilities
 
@@ -722,7 +854,18 @@ KC1 refers to Average ubiquity of products associated with a seller, while KP1 i
 
 **Network density** is calculated as count offers / (count sellers * count products) which measures how dense the seller-product matrix is.
 
-**Mean Complexity** is the average seller complexity.
+In VirtECom 1.1, seller complexity is operationalized as the number of capabilities possessed by a seller. It should not be interpreted as an Economic Complexity Index (ECI).
+
+Products with Zero Offers: Products that currently have no eligible sellers.
+
+Sellers with Zero Offers: Sellers that currently cannot offer any product.
+
+AI Sellers: Number of sellers possessing the capability "ai-recommendation".
+
+Cloud Sellers: Number of sellers possessing the capability "cloud-computing".
+￼
+Observe how network density evolves over time. Unlike VirtECom 1.0, network density is no longer entirely determined by the initial distribution of capabilities and may increase as sellers acquire new capabilities.
+
 
 ## THINGS TO TRY
 
@@ -744,12 +887,19 @@ Sellers: 20, 50, 100
 Customers: 20, 100, 500
 Products: 10, 25, 50
 
+Compare network density immediately after setup and after several hundred ticks.
+
+Observe whether products with zero offers disappear over time.
+
+Monitor the evolution of AI Sellers and Cloud Sellers.
+
+Examine whether capability accumulation precedes increases in network density.
+
 ## EXTENDING THE MODEL
 
 Potential future extensions include:
 
-- Rare capabilities
-- Capability complementarities
+
 - Capability depreciation
 - Knowledge spillovers between sellers
 - Entry and exit of firms
@@ -760,7 +910,7 @@ Potential future extensions include:
 
 ## NETLOGO FEATURES
 
-VirtECom 1.0 makes use of:
+VirtECom 1.1 makes use of:
 
 - Multiple agent breeds
 - Bipartite seller-product networks
@@ -769,63 +919,45 @@ VirtECom 1.0 makes use of:
 - Adaptive capability acquisition
 - Dynamic network expansion
 - BehaviorSpace-compatible experimentation
+- Common and rare capability pools
+- Complementary capability bundles
 
 
-## INITIAL EXPERIMENTAL FINDINGS
+## EXPERIMENTAL FINDINGS OF THIS VERSION
 BehaviorSpace experiments were conducted using:
 
 Sellers = {20, 50, 100}
 Customers = {20, 100, 500}
 Products = {10, 25, 50}
 
-Preliminary results indicate that:
+with ten stochastic replications per configuration.
 
-- Increasing the number of sellers generally increases diversification.
-- Buyer demand may indirectly influence complexity through capability accumulation.
-- Product variety influences network structure and ubiquity.
-- The resulting seller-product network is denser than empirical country-product matrices, motivating future work on rare capabilities and capability complementarities.
+Results suggest that the introduction of rare capabilities and complementary capability bundles substantially alters the initial structure of the seller-product network. Pilot experiments showed that many products were initially infeasible and that network density began at very low levels.
 
-These findings suggest that demand-side dynamics may influence structural complexity indirectly through capability acquisition and network expansion.
+However, adaptive learning progressively increased seller complexity and expanded the feasible product space. Across all experimental configurations, products without eligible sellers disappeared by the end of the simulations, indicating that capability accumulation transformed initially infeasible products into feasible products.
+
+Network density generally increased over time rather than remaining sparse. Thus, VirtECom 1.1 does not generate permanently low-density networks. Instead, it generates an endogenous process of network expansion driven by capability accumulation and adaptive learning.
+
+The experiments also revealed that rare capabilities tend to diffuse throughout the seller population because all capabilities remain equally learnable. Consequently, capability scarcity acts primarily as an initial condition rather than a persistent structural constraint.
+
+The experiments also revealed that capability accumulation progressively reduced structural constraints in the marketplace. Products that were initially infeasible became feasible as sellers acquired additional capabilities through learning.
+
 
 ## RELATED MODELS
-
-VirtECom combines ideas that are typically studied separately in the literature.
+VirtECom 1.1 combines concepts that are typically studied separately in the literature.
 
 **Economic Complexity Models**
 
-The conceptual foundation of VirtECom is inspired by the Economic Complexity framework of Hidalgo and Hausmann (2009), where economic development emerges from the accumulation and combination of productive capabilities. VirtECom reinterprets the traditional Country-Product matrix as a Seller-Product network, allowing Economic Complexity concepts to be explored in digital marketplace environments.
+VirtECom is conceptually inspired by the Economic Complexity framework of Hidalgo and Hausmann (2009), where productive capabilities shape diversification and economic structure. The model reinterprets the traditional Country-Product matrix as a Seller-Product network.
 
 **Evolutionary and Neo-Schumpeterian Models**
 
-VirtECom is related to evolutionary models of innovation and economic change that emphasize learning, adaptation, capability accumulation, and path dependence. In particular, the model shares conceptual similarities with:
-
-- Schumpeterian models of innovation and creative destruction.
-- Neo-Schumpeterian Agent-Based Models (Pyka & Fagiolo, 2007).
-- Innovation Systems models focused on knowledge accumulation and capability development.
+VirtECom is related to evolutionary models that emphasize learning, adaptation, capability accumulation, and path dependence. In particular, the model shares similarities with Neo-Schumpeterian Agent-Based Models that investigate innovation and structural change.
 
 **Digital Marketplace Models**
 
-The model is also related to Agent-Based Models of online marketplaces that investigate:
+VirtECom also relates to Agent-Based Models of digital marketplaces that explore buyer preferences, product choice, and market structure. Unlike most marketplace models, VirtECom explicitly incorporates capability-based production constraints and Economic Complexity indicators.
 
-- Buyer preferences
-- Product choice
-- Market concentration
-- Platform dynamics
-
-Unlike most marketplace models, VirtECom explicitly incorporates capability-based production constraints and Economic Complexity indicators.
-
-**Future Developments**
-
-Future models will move closer to evolutionary and Schumpeterian theories of economic development through:
-
-- Rare capabilities
-- Capability complementarities
-- Capability depreciation
-- Knowledge spillovers
-- Firm entry and exit
-- Creative destruction mechanisms
-
-Future versions will investigate how combinations of scarce and complementary capabilities influence the emergence of complexity, specialization, market concentration, and innovation in digital marketplaces.
 
 ## CREDITS AND REFERENCES
 
@@ -1673,7 +1805,7 @@ Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Sch
   </linkShapes>
   <previewCommands>setup repeat 75 [ go ]</previewCommands>
   <experiments>
-    <experiment name="test27" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="true">
+    <experiment name="test27" repetitions="10" sequentialRunOrder="false" runMetricsEveryStep="false">
       <setup>setup</setup>
       <go>go</go>
       <exitCondition><![CDATA[ticks >= 500]]></exitCondition>
@@ -1685,6 +1817,11 @@ Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Sch
         <metric>count offers</metric>
         <metric>(count offers) / (count sellers * count products)</metric>
         <metric>mean [complexity] of sellers</metric>
+        <metric>count products with[count my-offers = 0]</metric>
+        <metric>count sellers with[count my-offers = 0]</metric>
+        <metric>count sellers with[member? "ai-recommendation" capability-set]</metric>
+        <metric>count sellers with [member? "cloud-computing" capability-set]</metric>
+        <metric><![CDATA[mean [complexity] of sellers with [count my-offers > 0]]]></metric>
       </metrics>
       <constants>
         <enumeratedValueSet variable="Number-of-Sellers">
