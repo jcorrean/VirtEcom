@@ -746,23 +746,15 @@ end]]></code>
       </pen>
     </plot>
   </widgets>
-  <info><![CDATA[## VirtECom 1.1
+  <info><![CDATA[## VirtECom 1.2
 
-**An Agent-Based Model of Economic Complexity in Digital Marketplaces with Rare Capabilities and Complementary Products**
+**An Agent-Based Model of Economic Complexity, Financial Survival, and Firm Selection in Digital Marketplaces**
 
-VirtECom explores whether mechanisms commonly associated with Economic Complexity Theory can emerge in digital marketplaces through interactions among sellers, buyers, products, and capabilities. In Economic Complexity Theory, diversification and ubiquity are considered indirect indicators of the productive capabilities embedded within an economic system. The model is based on the following theoretical sources:
+VirtECom 1.2 extends the previous model by incorporating financial survival mechanisms. In addition to rare capabilities and complementary capability bundles, sellers now face operating costs, cash constraints, debt accumulation, borrowing decisions, and potential market exit.
 
-- Economic Complexity Theory (Hidalgo & Hausmann, 2009)
-- Evolutionary and Neo-Schumpeterian Economics (Bruun, 2003; Pyka & Fagiolo, 2007)
-- Digital Marketplace Agent-Based Models (Li et al., 2025)
-- Innovation Systems and Knowledge-Based Dynamics (Antonelli & Ferraris, 2011)
+Unlike VirtECom 1.1, where network expansion was largely irreversible, Version 1.2 introduces selection pressure through financial constraints. Sellers must generate sufficient revenue to remain solvent, while risk-tolerant sellers may accumulate debt in order to continue investing and operating.
 
-Inspired by Hidalgo and Hausmann's framework, VirtECom reinterprets the traditional Country-Product network as a Seller-Product network. Sellers possess capabilities that determine the products they can offer, while buyers generate demand through preferences and purchasing decisions.
-
-VirtECom 1.1 extends the original model by introducing rare capabilities and complementary capability requirements. Unlike VirtECom 1.0, where all capabilities were equally likely and products required randomly selected capabilities, Version 1.1 distinguishes between common and rare capabilities and introduces predefined capability bundles that represent complementary production requirements.
-
-These additions allow the model to investigate how initial capability scarcity affects network formation, product feasibility, and the subsequent expansion of the seller-product network through adaptive learning.
-
+These additions allow the model to investigate the interaction between capability accumulation, entrepreneurial risk, financial fragility, and the long-term evolution of marketplace networks.
 **ASSUMPTIONS**
 This model is based on the following simplifying assumptions:
 
@@ -774,13 +766,17 @@ This model is based on the following simplifying assumptions:
 - Products are generated from predefined complementary capability bundles.
 - Sellers can offer a product only if they possess all of the capabilities required by that product.
 - Capabilities can be acquired through learning but cannot be lost.
-- Sellers never leave the marketplace.
+- Sellers may leave the marketplace if they become financially insolvent.
 - Products never disappear from the marketplace.
-- Seller-product links can be created but cannot be removed.
+- Seller-product links can be created through capability accumulation. Existing links disappear only when sellers exit the marketplace.
 - Learning occurs internally and not through knowledge spillovers.
 - Buyers search for products using preference matching and budget constraints.
 - Product quality and price are determined by the complexity of the capability bundle required by the product.
 - Capability accumulation may increase the number of products that a seller is able to offer over time.
+- Sellers face operating costs every simulation step.
+- Sellers can borrow money when facing liquidity constraints.
+- Borrowing behavior depends on individual risk tolerance.
+- Sellers differ in their willingness to assume financial risk.
 
 
 **KNOWN LIMITATIONS**
@@ -790,9 +786,9 @@ VirtECom should be interpreted as a proof-of-concept model. Current limitations 
 - Capability rarity only affects initial conditions; all capabilities remain equally learnable during the simulation.
 - Capability complementarities are represented through fixed capability bundles rather than empirically calibrated production structures.
 - Capabilities can be acquired but cannot be lost.
-- Sellers cannot fail, exit the marketplace, or become inactive.
 - Products cannot disappear from the marketplace once created.
-- Seller-product links can be created but cannot be removed.
+- Seller-product links can be created through capability accumulation. 
+- Existing links disappear only when sellers exit the marketplace.
 - Knowledge spillovers between sellers are not represented.
 - Consumer attention constraints are not modeled.
 - Capability acquisition is driven by a simple profit-based learning mechanism and does not incorporate organizational learning, training investments, or technological barriers.
@@ -801,6 +797,13 @@ VirtECom should be interpreted as a proof-of-concept model. Current limitations 
 - Product capability bundles are stylized and intended for theoretical exploration rather than empirical representation of specific industries.
 - The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
 - The seller-product network may still become denser than empirical Country-Product networks as capabilities accumulate through learning.
+- Credit markets are highly simplified and do not include interest rates, collateral, repayment schedules, or lender behavior.
+- Operating costs are fixed and identical across sellers.
+- Buyers do not receive new income and therefore marketplace demand may decline over time.
+- Financial distress is represented through cash and debt dynamics rather than detailed accounting or balance-sheet structures.
+- Seller re-entry and firm creation are not currently modeled.
+
+
 ## RESEARCH QUESTIONS
 
 VirtECom was designed to explore the following questions:
@@ -821,6 +824,16 @@ VirtECom was designed to explore the following questions:
 
 8. How do complementary capability requirements affect diversification, ubiquity, and network expansion?
 
+9. How do operating costs affect the long-term survival of sellers?
+
+10. How does entrepreneurial risk-taking influence capability accumulation and firm survival?
+
+11. Under what conditions do financially fragile marketplaces experience firm exit and network contraction?
+
+12. How do financial constraints interact with capability accumulation processes?
+
+13. To what extent does demand exhaustion contribute to marketplace collapse and firm exit?
+
 
 ## HOW IT WORKS
 
@@ -828,16 +841,27 @@ VirtECom contains three classes of agents:
 
 **Sellers**
 
-Sellers possess capabilities and can offer products if they have all the capabilities required by a product. Seller complexity is operationalized as the number of capabilities currently possessed by a seller. Capabilities are divided into common and rare capabilities. Sellers typically begin with several common capabilities and only a small number of rare capabilities.
+Sellers possess capabilities, generate revenue, accumulate profit, maintain liquidity, and may incur debt in order to continue operating. Sellers can offer products if they have all required capabilities. Seller complexity is operationalized as the number of capabilities currently possessed by a seller. Sellers differ not only in their capabilities but also in their willingness to take financial risks.
 
 Each seller maintains:
 
-- Capability set
+- Capability Set
 - Revenue
 - Profit
+- Cash
+- Debt
+- Risk Tolerance
 - Complexity
 - Diversification
 - KC1
+
+Financial Survival
+
+At every tick, sellers incur operating costs that reduce their cash holdings.
+
+If liquidity becomes negative, sellers may seek external financing. The probability of seeking credit depends on the seller's individual risk tolerance.
+
+Sellers that accumulate excessive debt while remaining financially distressed may exit the marketplace. When a seller exits, all seller-product links associated with that seller disappear automatically.
 
 **Products**
 
@@ -863,7 +887,7 @@ Buyers search for products that match their preferences and budget constraints.
 
 **Bipartite Network Formation**
 
-In VirtECom 1.1, many products are initially infeasible because sellers may lack one or more rare capabilities. As sellers learn and accumulate capabilities, new seller-product links may emerge. A seller-product link is formed whenever:
+In VirtECom 1.2, many products are initially infeasible because sellers may lack one or more rare capabilities. As sellers learn and accumulate capabilities, new seller-product links may emerge. A seller-product link is formed whenever:
 
 RequiredCapabilities ⊆ SellerCapabilities
 
@@ -877,16 +901,17 @@ These indicators represent first-order reflections inspired by the Method of Ref
 
 ## HOW TO USE IT
 
-Press "setup" to initialize the simulation setup. By pressing "go", the model starts the simulation. During each tick:
+During each tick:
 
+- Sellers pay operating costs.
 - Buyers search for products.
 - Purchases occur.
 - Sellers collect revenue and profit.
 - Sellers may acquire new capabilities.
+- Sellers may seek external financing.
+- Financially distressed sellers may exit the marketplace.
 - Seller-product connections may expand as sellers acquire new capabilities.
-- Network-based diversification, ubiquity, and first-order reflection metrics are updated.
-
-The main parameters of this systems are "Number-of-Sellers," "Number-of-Customers," and "Number-of-Products"
+- Network metrics are updated.
 
 ## THINGS TO NOTICE
 
@@ -900,7 +925,7 @@ KC1 refers to Average ubiquity of products associated with a seller, while KP1 i
 
 **Network density** is calculated as count offers / (count sellers * count products) which measures how dense the seller-product matrix is.
 
-In VirtECom 1.1, seller complexity is operationalized as the number of capabilities possessed by a seller. It should not be interpreted as an Economic Complexity Index (ECI).
+In VirtECom 1.2, seller complexity is operationalized as the number of capabilities possessed by a seller. It should not be interpreted as an Economic Complexity Index (ECI).
 
 Products with Zero Offers: Products that currently have no eligible sellers.
 
@@ -911,6 +936,18 @@ AI Sellers: Number of sellers possessing the capability "ai-recommendation".
 Cloud Sellers: Number of sellers possessing the capability "cloud-computing".
 ￼
 Observe how network density evolves over time. Unlike VirtECom 1.0, network density is no longer entirely determined by the initial distribution of capabilities and may increase as sellers acquire new capabilities.
+
+Mean Cash: Average liquidity held by surviving sellers.
+
+Mean Debt: Average outstanding debt across surviving sellers.
+
+Indebted Sellers: Number of sellers carrying debt.
+
+Sellers Alive: Number of sellers currently active in the marketplace.
+
+Sellers Exited: Number of sellers that have exited the marketplace.
+
+Client Budget: Average remaining purchasing power among buyers.
 
 
 ## THINGS TO TRY
@@ -945,12 +982,13 @@ Examine whether capability accumulation precedes increases in network density.
 
 Potential future extensions include:
 
-
 - Capability depreciation
 - Knowledge spillovers between sellers
-- Entry and exit of firms (next version)
-- Creative destruction mechanisms (next version)
-- Consumer attention constraints 
+- Entry of new firms
+- Dynamic credit markets
+- Interest rates and repayment schedules
+- Endogenous demand generation
+- Consumer attention constraints
 - Reputation systems
 - Advanced Economic Complexity measures (ECI-like indicators)
 
@@ -967,30 +1005,27 @@ VirtECom 1.1 makes use of:
 - BehaviorSpace-compatible experimentation
 - Common and rare capability pools
 - Complementary capability bundles
+- Operating cost dynamics
+- Cash accumulation and depletion
+- Debt financing
+- Risk-tolerance heterogeneity
+- Firm exit mechanisms
 
 
 ## EXPERIMENTAL FINDINGS OF THIS VERSION
-BehaviorSpace experiments were conducted using:
+Preliminary experiments suggest that introducing operating costs, debt financing, and firm exit fundamentally changes the dynamics observed in VirtECom 1.1.
 
-Sellers = {20, 50, 100}
-Customers = {20, 100, 500}
-Products = {10, 25, 50}
+While capability accumulation initially promotes network expansion, financial pressures eventually generate seller exits and network contraction. In several exploratory simulations, sellers accumulated capabilities and expanded the seller-product network during the early stages of the simulation, but declining buyer budgets reduced demand, leading to lower revenues, increasing financial distress, and eventual firm exit.
 
-with ten stochastic replications per configuration.
+These preliminary observations suggest that marketplace evolution may depend on a balance between capability accumulation and financial survival. The interaction between demand, revenue generation, debt financing, and firm exit appears to be a critical determinant of long-term marketplace stability.
 
-Results suggest that the introduction of rare capabilities and complementary capability bundles substantially alters the initial structure of the seller-product network. Pilot experiments showed that many products were initially infeasible and that network density began at very low levels.
+Consequently, VirtECom 1.2 introduces the possibility of both network expansion and network collapse, transforming complexity growth from a largely irreversible process into an outcome contingent on financial sustainability.
 
-However, adaptive learning progressively increased seller complexity and expanded the feasible product space. Across all experimental configurations, products without eligible sellers disappeared by the end of the simulations, indicating that capability accumulation transformed initially infeasible products into feasible products.
-
-Network density generally increased over time rather than remaining sparse. Thus, VirtECom 1.1 does not generate permanently low-density networks. Instead, it generates an endogenous process of network expansion driven by capability accumulation and adaptive learning.
-
-The experiments also revealed that rare capabilities tend to diffuse throughout the seller population because all capabilities remain equally learnable. Consequently, capability scarcity acts primarily as an initial condition rather than a persistent structural constraint.
-
-The experiments also revealed that capability accumulation progressively reduced structural constraints in the marketplace. Products that were initially infeasible became feasible as sellers acquired additional capabilities through learning.
+Preliminary observations also suggest that declining buyer budgets may play a central role in marketplace collapse. In exploratory runs, buyer purchasing power was progressively exhausted, reducing revenues and contributing to financial distress among sellers. This suggests that demand regeneration may be an important determinant of long-term marketplace sustainability.
 
 
 ## RELATED MODELS
-VirtECom 1.1 combines concepts that are typically studied separately in the literature.
+VirtECom 1.2 combines concepts that are typically studied separately in the literature.
 
 **Economic Complexity Models**
 
