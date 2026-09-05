@@ -12,6 +12,7 @@ globals [
   initial-sellers
   operating-cost
   destroyed-links
+  operating-cost
 ]
 
 
