@@ -10,10 +10,11 @@ globals [
   rare-capabilities
   product-templates
   initial-sellers
-  operating-cost
   destroyed-links
-]
 
+  loan-size
+  debt-threshold
+]
 
 breed [sellers seller]
 breed [products product]
@@ -77,7 +78,10 @@ to setup
   clear-all
 
 
-  set operating-cost 20
+  set loan-size 500
+  set debt-threshold 2000
+  set destroyed-links 0
+  
   set product-templates
 [
  ["BasicCommerce"
@@ -188,7 +192,7 @@ end
 to initialize-seller
 
 
-  set destroyed-links 0
+  
   set cash 1000
   set debt 0
   set risk-tolerance random-float 1
@@ -325,10 +329,8 @@ to evaluate-financing
 
     if random-float 1 < risk-tolerance
     [
-      let loan 500
-
-      set debt debt + loan
-      set cash cash + loan
+      set debt debt + loan-size
+      set cash cash + loan-size
     ]
 
   ]
@@ -464,7 +466,7 @@ to seller-exit
   [
     cash < 0
     and
-    debt > 2000
+    debt > debt-threshold
   ]
   [
 
@@ -587,6 +589,66 @@ to-report is-subset? [small-set big-set]
          filter
          [ x -> not member? x big-set ]
          small-set
+
+end
+
+to-report survival-rate
+
+  report count sellers / initial-sellers
+
+end
+
+to-report mean-cash
+
+  ifelse any? sellers
+  [
+    report mean [cash] of sellers
+  ]
+  [
+    report 0
+  ]
+
+end
+
+to-report mean-debt
+
+  ifelse any? sellers
+  [
+    report mean [debt] of sellers
+  ]
+  [
+    report 0
+  ]
+
+end
+
+to-report mean-buyer-budget
+
+  report mean [budget] of buyers
+
+end
+
+to-report exited-sellers
+
+  report initial-sellers - count sellers
+
+end
+
+to-report link-loss
+
+  report destroyed-links
+
+end
+
+to-report mean-complexity
+
+  ifelse any? sellers
+  [
+    report mean [complexity] of sellers
+  ]
+  [
+    report 0
+  ]
 
 end
 
@@ -745,6 +807,7 @@ end]]></code>
         <update>plot mean [budget] of buyers</update>
       </pen>
     </plot>
+    <input x="5" multiline="false" y="575" height="60" variable="operating-cost" type="number" width="250">0.0</input>
   </widgets>
   <info><![CDATA[## VirtECom 1.2
 
@@ -1918,6 +1981,33 @@ Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Sch
         <enumeratedValueSet variable="Number-of-Products">
           <value value="10"></value>
           <value value="25"></value>
+          <value value="50"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="Experiment A_OperatingCost" repetitions="1" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <exitCondition><![CDATA[ticks >= 1000]]></exitCondition>
+      <metrics>
+        <metric>count sellers</metric>
+        <metric>exited-sellers</metric>
+        <metric>survival-rate</metric>
+        <metric>mean-cash</metric>
+        <metric>mean-debt</metric>
+        <metric>mean-buyer-budget</metric>
+        <metric>count offers</metric>
+        <metric>link-loss</metric>
+        <metric>mean-complexity</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="operating-cost">
+          <value value="0"></value>
+          <value value="5"></value>
+          <value value="10"></value>
+          <value value="20"></value>
+          <value value="30"></value>
+          <value value="40"></value>
           <value value="50"></value>
         </enumeratedValueSet>
       </constants>
