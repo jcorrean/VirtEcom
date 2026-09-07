@@ -2,44 +2,28 @@ library(tidyverse)
 
 read_behaviorspace_spreadsheet <- function(
   file,
-  vars_per_run = 10
+  vars_per_run = 11
 ) {
- 
- #----------------------------------------
- # Leer archivo completo
- #----------------------------------------
  
  raw <- readLines(file)
  
- #----------------------------------------
- # Encabezados de variables
- #----------------------------------------
- 
+ # Encabezados
  headers <- strsplit(raw[16], ",")[[1]]
- 
  headers <- gsub('"', '', headers)
  
  headers <- headers[-1]
  
- #----------------------------------------
+ # Variables únicas
+ vars <- headers[1:vars_per_run]
+ 
  # Datos
- #----------------------------------------
- 
  data_lines <- raw[17:length(raw)]
- 
- #----------------------------------------
- # Número de corridas
- #----------------------------------------
  
  n_runs <- length(headers) / vars_per_run
  
  message("Runs detectados: ", n_runs)
  
- #----------------------------------------
- # Parsear cada tick
- #----------------------------------------
- 
- ticks <- vector("list", length(data_lines))
+ out <- vector("list", length(data_lines))
  
  for(i in seq_along(data_lines)) {
   
@@ -57,34 +41,25 @@ read_behaviorspace_spreadsheet <- function(
   
   df <- as_tibble(mat)
   
-  names(df) <- headers[1:vars_per_run]
+  names(df) <- vars
   
   df$run <- seq_len(n_runs)
   
-  ticks[[i]] <- df
-  
+  out[[i]] <- df
  }
  
- #----------------------------------------
- # Combinar todos los ticks
- #----------------------------------------
- 
- out <- bind_rows(ticks)
- 
- #----------------------------------------
- # Convertir numéricos
- #----------------------------------------
+ out <- bind_rows(out)
  
  out <- out %>%
   mutate(
    across(
     everything(),
     ~ suppressWarnings(as.numeric(.))
-   )
+   ),
+   run = as.integer(run)
   )
  
- return(out)
- 
+ out
 }
 
 
@@ -93,12 +68,34 @@ virtEcom_long <-
   "Experiments/VirtEcom1.2 Experiment A_OperatingCost-spreadsheet(30).csv"
  )
 
-virtEcom_long %>%
+variable.names(virtEcom_long)
+colnames(virtEcom_long)[1] <- "step"
+
+library(tidyverse)
+
+survival_curves <- virtEcom_long %>%
  group_by(
-  operating_cost,
+  `operating-cost`,
   step
  ) %>%
  summarise(
   sellers =
-   mean(count_sellers)
+   mean(`count sellers`),
+  .groups = "drop"
  )
+
+ggplot(
+ survival_curves,
+ aes(
+  x = step,
+  y = sellers,
+  color = factor(`operating-cost`)
+ )
+) +
+ geom_line(size = 1) +
+ labs(
+  x = "Tick",
+  y = "Mean Sellers Alive",
+  color = "Operating Cost"
+ ) +
+ theme_minimal()
