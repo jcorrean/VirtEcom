@@ -65,7 +65,7 @@ read_behaviorspace_spreadsheet <- function(
 
 virtEcom_long <-
  read_behaviorspace_spreadsheet(
-  "Experiments/VirtEcom1.3 Experiment B_OperatingCost_withIncome-spreadsheet(30).csv"
+  "Experiments/VirtEcom1.3 Experiment_C_BuyerIncome-spreadsheet.csv"
  )
 
 variable.names(virtEcom_long)
@@ -181,3 +181,74 @@ ggplot(
   color = "Operating Cost"
  ) +
  theme_minimal(base_size = 14)
+
+
+
+# Experimento C
+
+read_behaviorspace_spreadsheet <- function(
+    file,
+    vars_per_run = 12
+) {
+  
+  raw <- readLines(file)
+  
+  # Encabezados
+  headers <- strsplit(raw[17], ",")[[1]]
+  headers <- gsub('"', '', headers)
+  
+  headers <- headers[-1]
+  
+  # Variables únicas
+  vars <- headers[1:vars_per_run]
+  
+  # Datos
+  data_lines <- raw[18:length(raw)]
+  
+  n_runs <- length(headers) / vars_per_run
+  
+  message("Runs detectados: ", n_runs)
+  
+  out <- vector("list", length(data_lines))
+  
+  for(i in seq_along(data_lines)) {
+    
+    row <- strsplit(data_lines[i], ",")[[1]]
+    
+    row <- gsub('"', '', row)
+    
+    row <- row[-1]
+    
+    mat <- matrix(
+      row,
+      ncol = vars_per_run,
+      byrow = TRUE
+    )
+    
+    df <- as_tibble(mat)
+    
+    names(df) <- vars
+    
+    df$run <- seq_len(n_runs)
+    
+    out[[i]] <- df
+  }
+  
+  out <- bind_rows(out)
+  
+  out <- out %>%
+    mutate(
+      across(
+        everything(),
+        ~ suppressWarnings(as.numeric(.))
+      ),
+      run = as.integer(run)
+    )
+  
+  out
+}
+
+virtEcom_long <-
+  read_behaviorspace_spreadsheet(
+    "Experiments/VirtEcom1.3 Experiment_C_BuyerIncome-spreadsheet.csv"
+  )
