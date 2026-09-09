@@ -1,5 +1,7 @@
 library(tidyverse)
 
+
+# Exp A -------------------------------------------------------------------
 read_behaviorspace_spreadsheet <- function(
   file,
   vars_per_run = 11
@@ -184,7 +186,9 @@ ggplot(
 
 
 
-# Experimento C
+
+# Exp C -------------------------------------------------------------------
+
 
 read_behaviorspace_spreadsheet <- function(
     file,
@@ -252,3 +256,143 @@ virtEcom_long <-
   read_behaviorspace_spreadsheet(
     "Experiments/VirtEcom1.3 Experiment_C_BuyerIncome-spreadsheet.csv"
   )
+
+library(tidyverse)
+
+survival_curves <- virtEcom_long %>%
+ group_by(
+  `buyer-income`,
+  step
+ ) %>%
+ summarise(
+  sellers = mean(`count sellers`),
+  .groups = "drop"
+ )
+
+ggplot(
+ survival_curves,
+ aes(
+  x = step,
+  y = sellers,
+  color = factor(`buyer-income`)
+ )
+) +
+ geom_line(linewidth = 1) +
+ labs(
+  title = "Seller Survival by Buyer Income",
+  x = "Tick",
+  y = "Mean Sellers Alive",
+  color = "Buyer Income"
+ ) +
+ theme_minimal(base_size = 14)
+￼
+2. Deuda
+debt_curves <- virtEcom_long %>%
+ group_by(
+  `buyer-income`,
+  step
+ ) %>%
+ summarise(
+  debt = mean(`mean-debt`, na.rm = TRUE),
+  .groups = "drop"
+ )
+
+ggplot(
+ debt_curves,
+ aes(
+  x = step,
+  y = debt,
+  color = factor(`buyer-income`)
+ )
+) +
+ geom_line(linewidth = 1) +
+ labs(
+  title = "Average Debt Accumulation by Buyer Income",
+  x = "Tick",
+  y = "Average Debt",
+  color = "Buyer Income"
+ ) +
+ theme_minimal(base_size = 14)
+￼
+3. Presupuesto de compradores
+Esta probablemente será la gráfica más importante del Experimento C.
+budget_curves <- virtEcom_long %>%
+ group_by(
+  `buyer-income`,
+  step
+ ) %>%
+ summarise(
+  budget = mean(`mean-buyer-budget`, na.rm = TRUE),
+  .groups = "drop"
+ )
+
+ggplot(
+ budget_curves,
+ aes(
+  x = step,
+  y = budget,
+  color = factor(`buyer-income`)
+ )
+) +
+ geom_line(linewidth = 1) +
+ labs(
+  title = "Average Buyer Budget by Buyer Income",
+  x = "Tick",
+  y = "Average Buyer Budget",
+  color = "Buyer Income"
+ ) +
+ theme_minimal(base_size = 14)
+￼
+4. Cash
+cash_curves <- virtEcom_long %>%
+ group_by(
+  `buyer-income`,
+  step
+ ) %>%
+ summarise(
+  cash = mean(`mean-cash`, na.rm = TRUE),
+  .groups = "drop"
+ )
+
+ggplot(
+ cash_curves,
+ aes(
+  x = step,
+  y = cash,
+  color = factor(`buyer-income`)
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Average Seller Cash by Buyer Income",
+  x = "Tick",
+  y = "Average Cash",
+  color = "Buyer Income"
+ ) +
+ theme_minimal(base_size = 14)
+￼
+5. Gráfica que NO teníamos en A ni B (recomendada)
+Ahora sí tiene sentido graficar directamente el efecto final de buyer-income.
+Supervivencia final
+final_survival <- virtEcom_long %>%
+ filter(step == max(step)) %>%
+ group_by(`buyer-income`) %>%
+ summarise(
+  sellers_alive = mean(`count sellers`),
+  .groups = "drop"
+ )
+
+ggplot(
+ final_survival,
+ aes(
+  x = factor(`buyer-income`),
+  y = sellers_alive
+ )
+) +
+ geom_col(fill = "steelblue") +
+ labs(
+  title = "Final Seller Survival",
+  x = "Buyer Income",
+  y = "Mean Sellers Alive at Tick 1000"
+ ) +
+ theme_minimal(base_size = 14)
