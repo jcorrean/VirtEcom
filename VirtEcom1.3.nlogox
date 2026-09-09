@@ -2077,5 +2077,35 @@ Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Sch
         </enumeratedValueSet>
       </constants>
     </experiment>
+    <experiment name="Experiment_C_DemandReplenishment (copy)" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <exitCondition><![CDATA[ticks >= 1000]]></exitCondition>
+      <metrics>
+        <metric>operating-cost</metric>
+        <metric>count sellers</metric>
+        <metric>exited-sellers</metric>
+        <metric>survival-rate</metric>
+        <metric>mean-cash</metric>
+        <metric>mean-debt</metric>
+        <metric>mean-buyer-budget</metric>
+        <metric>count offers</metric>
+        <metric>link-loss</metric>
+        <metric>mean-complexity</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="operating-cost">
+          <value value="20"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="buyer-income">
+          <value value="0"></value>
+          <value value="5"></value>
+          <value value="10"></value>
+          <value value="20"></value>
+          <value value="50"></value>
+          <value value="100"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
   </experiments>
 </model>
