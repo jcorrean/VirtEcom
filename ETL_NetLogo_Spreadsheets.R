@@ -257,6 +257,10 @@ virtEcom_long <-
     "Experiments/VirtEcom1.3 Experiment_C_BuyerIncome-spreadsheet.csv"
   )
 
+variable.names(virtEcom_long)
+colnames(virtEcom_long)[1] <- "step"
+
+
 library(tidyverse)
 
 survival_curves <- virtEcom_long %>%
@@ -285,8 +289,8 @@ ggplot(
   color = "Buyer Income"
  ) +
  theme_minimal(base_size = 14)
-￼
-2. Deuda
+
+
 debt_curves <- virtEcom_long %>%
  group_by(
   `buyer-income`,
@@ -313,9 +317,8 @@ ggplot(
   color = "Buyer Income"
  ) +
  theme_minimal(base_size = 14)
-￼
-3. Presupuesto de compradores
-Esta probablemente será la gráfica más importante del Experimento C.
+
+#Esta probablemente será la gráfica más importante del Experimento C.
 budget_curves <- virtEcom_long %>%
  group_by(
   `buyer-income`,
@@ -342,8 +345,7 @@ ggplot(
   color = "Buyer Income"
  ) +
  theme_minimal(base_size = 14)
-￼
-4. Cash
+
 cash_curves <- virtEcom_long %>%
  group_by(
   `buyer-income`,
@@ -370,10 +372,9 @@ ggplot(
   color = "Buyer Income"
  ) +
  theme_minimal(base_size = 14)
-￼
-5. Gráfica que NO teníamos en A ni B (recomendada)
-Ahora sí tiene sentido graficar directamente el efecto final de buyer-income.
-Supervivencia final
+
+# Gráfica que NO teníamos en A ni B (recomendada)
+# Supervivencia final
 final_survival <- virtEcom_long %>%
  filter(step == max(step)) %>%
  group_by(`buyer-income`) %>%
