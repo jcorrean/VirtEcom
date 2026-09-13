@@ -20,6 +20,7 @@ globals [
   entry-threshold
   entry-window
   entry-window-duration
+  total-exits
 
 ]
 
@@ -529,6 +530,8 @@ to seller-exit
 
     set destroyed-links
         destroyed-links + count my-offers
+    
+    set total-exits total-exits + 1
 
     die
 
@@ -772,7 +775,7 @@ end
 
 to-report exited-sellers
 
-  report initial-sellers - count sellers
+  report total-exits
 
 end
 
@@ -815,6 +818,8 @@ to-report seller-population
   report count sellers
 
 end
+
+
 
 to-report net-population-change
 
