@@ -400,16 +400,15 @@ ggplot(
 
 
 # Exp D -------------------------------------------------------------------
-
 read_behaviorspace_spreadsheet <- function(
     file,
-    vars_per_run = 12
+    vars_per_run = 15
 ) {
   
   raw <- readLines(file)
   
   # Encabezados
-  headers <- strsplit(raw[17], ",")[[1]]
+  headers <- strsplit(raw[18], ",")[[1]]
   headers <- gsub('"', '', headers)
   
   headers <- headers[-1]
@@ -418,7 +417,7 @@ read_behaviorspace_spreadsheet <- function(
   vars <- headers[1:vars_per_run]
   
   # Datos
-  data_lines <- raw[18:length(raw)]
+  data_lines <- raw[19:length(raw)]
   
   n_runs <- length(headers) / vars_per_run
   
@@ -447,6 +446,7 @@ read_behaviorspace_spreadsheet <- function(
     df$run <- seq_len(n_runs)
     
     out[[i]] <- df
+    
   }
   
   out <- bind_rows(out)
@@ -461,11 +461,12 @@ read_behaviorspace_spreadsheet <- function(
     )
   
   out
+  
 }
 
 virtEcom_long <-
   read_behaviorspace_spreadsheet(
-    "Experiments/VirtEcom1.3 Experiment_C_BuyerIncome-spreadsheet.csv"
+    "Experiments/VirtEcom1.4 Experiment_D_EntrepreneurialSwarms-spreadsheet.csv"
   )
 
 variable.names(virtEcom_long)
