@@ -402,7 +402,7 @@ ggplot(
 # Exp D -------------------------------------------------------------------
 read_behaviorspace_spreadsheet <- function(
     file,
-    vars_per_run = 15
+    vars_per_run = 16
 ) {
   
   raw <- readLines(file)
@@ -471,13 +471,41 @@ virtEcom_long <-
 
 variable.names(virtEcom_long)
 colnames(virtEcom_long)[1] <- "step"
-
+summary(virtEcom_long$`entry-threshold`)
 
 library(tidyverse)
 
+population_curves <- virtEcom_long %>%
+  group_by(
+    `entry-threshold`,
+    step
+  ) %>%
+  summarise(
+    population = mean(`seller-population`),
+    .groups = "drop"
+  )
+
+ggplot(
+  population_curves,
+  aes(
+    step,
+    population,
+    color = factor(`entry-threshold`)
+  )
+) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Seller Population",
+    x = "Tick",
+    y = "Population",
+    color = "Entry Threshold"
+  ) +
+  theme_minimal()
+
+
 survival_curves <- virtEcom_long %>%
   group_by(
-    `buyer-income`,
+    `entry-threshold`,
     step
   ) %>%
   summarise(
@@ -490,122 +518,14 @@ ggplot(
   aes(
     x = step,
     y = sellers,
-    color = factor(`buyer-income`)
+    color = factor(`entry-threshold`)
   )
 ) +
   geom_line(linewidth = 1) +
   labs(
-    title = "Seller Survival by Buyer Income",
+    title = "Seller Survival by Entry Threshold",
     x = "Tick",
     y = "Mean Sellers Alive",
-    color = "Buyer Income"
-  ) +
-  theme_minimal(base_size = 14)
-
-
-debt_curves <- virtEcom_long %>%
-  group_by(
-    `buyer-income`,
-    step
-  ) %>%
-  summarise(
-    debt = mean(`mean-debt`, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-ggplot(
-  debt_curves,
-  aes(
-    x = step,
-    y = debt,
-    color = factor(`buyer-income`)
-  )
-) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "Average Debt Accumulation by Buyer Income",
-    x = "Tick",
-    y = "Average Debt",
-    color = "Buyer Income"
-  ) +
-  theme_minimal(base_size = 14)
-
-#Esta probablemente será la gráfica más importante del Experimento C.
-budget_curves <- virtEcom_long %>%
-  group_by(
-    `buyer-income`,
-    step
-  ) %>%
-  summarise(
-    budget = mean(`mean-buyer-budget`, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-ggplot(
-  budget_curves,
-  aes(
-    x = step,
-    y = budget,
-    color = factor(`buyer-income`)
-  )
-) +
-  geom_line(linewidth = 1) +
-  labs(
-    title = "Average Buyer Budget by Buyer Income",
-    x = "Tick",
-    y = "Average Buyer Budget",
-    color = "Buyer Income"
-  ) +
-  theme_minimal(base_size = 14)
-
-cash_curves <- virtEcom_long %>%
-  group_by(
-    `buyer-income`,
-    step
-  ) %>%
-  summarise(
-    cash = mean(`mean-cash`, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-ggplot(
-  cash_curves,
-  aes(
-    x = step,
-    y = cash,
-    color = factor(`buyer-income`)
-  )
-) +
-  geom_line(linewidth = 1.2) +
-  labs(
-    title = "Average Seller Cash by Buyer Income",
-    x = "Tick",
-    y = "Average Cash",
-    color = "Buyer Income"
-  ) +
-  theme_minimal(base_size = 14)
-
-# Gráfica que NO teníamos en A ni B (recomendada)
-# Supervivencia final
-final_survival <- virtEcom_long %>%
-  filter(step == max(step)) %>%
-  group_by(`buyer-income`) %>%
-  summarise(
-    sellers_alive = mean(`count sellers`),
-    .groups = "drop"
-  )
-
-ggplot(
-  final_survival,
-  aes(
-    x = factor(`buyer-income`),
-    y = sellers_alive
-  )
-) +
-  geom_col(fill = "steelblue") +
-  labs(
-    title = "Final Seller Survival",
-    x = "Buyer Income",
-    y = "Mean Sellers Alive at Tick 1000"
+    color = "Entry Threshold"
   ) +
   theme_minimal(base_size = 14)
