@@ -502,6 +502,82 @@ ggplot(
   ) +
   theme_minimal()
 
+entry_curves <- virtEcom_long %>%
+  group_by(
+    `entry-threshold`,
+    step
+  ) %>%
+  summarise(
+    entrants = mean(entrants),
+    .groups = "drop"
+  )
+
+ggplot(
+  entry_curves,
+  aes(
+    step,
+    entrants,
+    color = factor(`entry-threshold`)
+  )
+) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Cumulative Entrants",
+    x = "Tick",
+    y = "Entrants",
+    color = "Entry Threshold"
+  ) +
+  theme_minimal()
+
+complexity_curves <- virtEcom_long %>%
+  group_by(
+    `entry-threshold`,
+    step
+  ) %>%
+  summarise(
+    complexity = mean(`mean-complexity`),
+    .groups = "drop"
+  )
+
+ggplot(
+  complexity_curves,
+  aes(
+    step,
+    complexity,
+    color = factor(`entry-threshold`)
+  )
+) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Mean Complexity",
+    x = "Tick",
+    y = "Complexity",
+    color = "Entry Threshold"
+  ) +
+  theme_minimal()
+
+final_population <- virtEcom_long %>%
+  filter(step == max(step)) %>%
+  group_by(`entry-threshold`) %>%
+  summarise(
+    population = mean(`seller-population`),
+    .groups = "drop"
+  )
+
+ggplot(
+  final_population,
+  aes(
+    factor(`entry-threshold`),
+    population
+  )
+) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "Final Population",
+    x = "Entry Threshold",
+    y = "Mean Population"
+  ) +
+  theme_minimal()
 
 survival_curves <- virtEcom_long %>%
   group_by(
