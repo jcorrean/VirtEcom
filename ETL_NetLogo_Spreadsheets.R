@@ -1,39 +1,96 @@
-library(tidyverse)
-
-
 # Exp A -------------------------------------------------------------------
-read_behaviorspace_spreadsheet <- function(
-  file,
-  vars_per_run = 11
-) {
+library(tidyverse)
+read_behaviorspace_spreadsheet <- function(file) {
+ 
+ # --------------------------------------------------
+ # Leer archivo
+ # --------------------------------------------------
  
  raw <- readLines(file)
  
- # Encabezados
- headers <- strsplit(raw[17], ",")[[1]]
- headers <- gsub('"', '', headers)
+ # --------------------------------------------------
+ # Encontrar sección all run data
+ # --------------------------------------------------
  
+ all_run_row <- grep(
+  "all run data",
+  raw,
+  ignore.case = TRUE
+ )[1]
+ 
+ if(is.na(all_run_row)) {
+  stop("No se encontró la sección all run data")
+ }
+ 
+ # --------------------------------------------------
+ # La fila all_run_row contiene:
+ # [all run data] + headers repetidos
+ # --------------------------------------------------
+ 
+ headers <- strsplit(
+  raw[all_run_row],
+  ","
+ )[[1]]
+ 
+ headers <- gsub('"', "", headers)
+ 
+ # eliminar únicamente [all run data]
  headers <- headers[-1]
  
- # Variables únicas
- vars <- headers[1:vars_per_run]
+ vars <- unique(headers)
  
- # Datos
- data_lines <- raw[18:length(raw)]
+ vars_per_run <- length(vars)
  
  n_runs <- length(headers) / vars_per_run
  
- message("Runs detectados: ", n_runs)
+ cat("\n")
+ cat("----------------------------------------\n")
+ cat("Variables detectadas:", vars_per_run, "\n")
+ cat("Runs detectados:", n_runs, "\n")
+ cat("----------------------------------------\n")
  
- out <- vector("list", length(data_lines))
+ print(vars)
+ 
+ # --------------------------------------------------
+ # Los datos empiezan inmediatamente después
+ # --------------------------------------------------
+ 
+ data_lines <- raw[(all_run_row + 1):length(raw)]
+ 
+ out <- vector(
+  "list",
+  length(data_lines)
+ )
  
  for(i in seq_along(data_lines)) {
   
-  row <- strsplit(data_lines[i], ",")[[1]]
+  row <- strsplit(
+   data_lines[i],
+   ","
+  )[[1]]
   
-  row <- gsub('"', '', row)
+  row <- gsub('"', "", row)
   
+  # eliminar primera columna vacía
   row <- row[-1]
+  
+  # validación
+  if(length(row) != (vars_per_run * n_runs)) {
+   
+   warning(
+    paste(
+     "Fila",
+     i,
+     "tiene",
+     length(row),
+     "valores; esperaba",
+     vars_per_run * n_runs
+    )
+   )
+   
+   next
+   
+  }
   
   mat <- matrix(
    row,
@@ -41,13 +98,17 @@ read_behaviorspace_spreadsheet <- function(
    byrow = TRUE
   )
   
-  df <- as_tibble(mat)
+  df <- as_tibble(
+   mat,
+   .name_repair = "minimal"
+  )
   
   names(df) <- vars
   
   df$run <- seq_len(n_runs)
   
   out[[i]] <- df
+  
  }
  
  out <- bind_rows(out)
@@ -62,7 +123,9 @@ read_behaviorspace_spreadsheet <- function(
   )
  
  out
+ 
 }
+
 
 
 virtEcom_long <-
@@ -188,70 +251,6 @@ ggplot(
 
 
 # Exp C -------------------------------------------------------------------
-
-
-read_behaviorspace_spreadsheet <- function(
-    file,
-    vars_per_run = 12
-) {
-  
-  raw <- readLines(file)
-  
-  # Encabezados
-  headers <- strsplit(raw[17], ",")[[1]]
-  headers <- gsub('"', '', headers)
-  
-  headers <- headers[-1]
-  
-  # Variables únicas
-  vars <- headers[1:vars_per_run]
-  
-  # Datos
-  data_lines <- raw[18:length(raw)]
-  
-  n_runs <- length(headers) / vars_per_run
-  
-  message("Runs detectados: ", n_runs)
-  
-  out <- vector("list", length(data_lines))
-  
-  for(i in seq_along(data_lines)) {
-    
-    row <- strsplit(data_lines[i], ",")[[1]]
-    
-    row <- gsub('"', '', row)
-    
-    row <- row[-1]
-    
-    mat <- matrix(
-      row,
-      ncol = vars_per_run,
-      byrow = TRUE
-    )
-    
-    df <- as_tibble(mat)
-    
-    names(df) <- vars
-    
-    df$run <- seq_len(n_runs)
-    
-    out[[i]] <- df
-  }
-  
-  out <- bind_rows(out)
-  
-  out <- out %>%
-    mutate(
-      across(
-        everything(),
-        ~ suppressWarnings(as.numeric(.))
-      ),
-      run = as.integer(run)
-    )
-  
-  out
-}
-
 virtEcom_long <-
   read_behaviorspace_spreadsheet(
     "Experiments/VirtEcom1.3 Experiment_C_BuyerIncome-spreadsheet.csv"
@@ -400,70 +399,6 @@ ggplot(
 
 
 # Exp D -------------------------------------------------------------------
-read_behaviorspace_spreadsheet <- function(
-    file,
-    vars_per_run = 16
-) {
-  
-  raw <- readLines(file)
-  
-  # Encabezados
-  headers <- strsplit(raw[18], ",")[[1]]
-  headers <- gsub('"', '', headers)
-  
-  headers <- headers[-1]
-  
-  # Variables únicas
-  vars <- headers[1:vars_per_run]
-  
-  # Datos
-  data_lines <- raw[19:length(raw)]
-  
-  n_runs <- length(headers) / vars_per_run
-  
-  message("Runs detectados: ", n_runs)
-  
-  out <- vector("list", length(data_lines))
-  
-  for(i in seq_along(data_lines)) {
-    
-    row <- strsplit(data_lines[i], ",")[[1]]
-    
-    row <- gsub('"', '', row)
-    
-    row <- row[-1]
-    
-    mat <- matrix(
-      row,
-      ncol = vars_per_run,
-      byrow = TRUE
-    )
-    
-    df <- as_tibble(mat)
-    
-    names(df) <- vars
-    
-    df$run <- seq_len(n_runs)
-    
-    out[[i]] <- df
-    
-  }
-  
-  out <- bind_rows(out)
-  
-  out <- out %>%
-    mutate(
-      across(
-        everything(),
-        ~ suppressWarnings(as.numeric(.))
-      ),
-      run = as.integer(run)
-    )
-  
-  out
-  
-}
-
 virtEcom_long <-
   read_behaviorspace_spreadsheet(
     "Experiments/VirtEcom1.4 Experiment_D_EntrepreneurialSwarms-spreadsheet.csv"
@@ -607,5 +542,123 @@ ggplot(
   theme_minimal(base_size = 14)
 
 # Exp E -------------------------------------------------------------------
+library(ggplot2)
+virtEcom_long <-
+ read_behaviorspace_spreadsheet(
+  "Experiments/VirtEcom1.5 Experiment_E_CostlyLearning-spreadsheet.csv"
+ )
+variable.names(virtEcom_long)
+colnames(virtEcom_long)[1] <- "step"
+
+
+
+complexity_curves <- virtEcom_long %>%
+ group_by(
+  `learning-cost`,
+  step
+ ) %>%
+ summarise(
+  complexity = mean(`mean-complexity`),
+  .groups = "drop"
+ )
+
+ggplot(
+ complexity_curves,
+ aes(
+  x = step,
+  y = complexity,
+  color = factor(`learning-cost`)
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Capability Accumulation under Costly Learning",
+  x = "Tick",
+  y = "Mean Complexity",
+  color = "Learning Cost"
+ ) +
+ theme_minimal(base_size = 14)
+
+population_curves <- virtEcom_long %>%
+ group_by(
+  `learning-cost`,
+  step
+ ) %>%
+ summarise(
+  population = mean(`seller-population`),
+  .groups = "drop"
+ )
+
+ggplot(
+ population_curves,
+ aes(
+  x = step,
+  y = population,
+  color = factor(`learning-cost`)
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Seller Population under Costly Learning",
+  x = "Tick",
+  y = "Population",
+  color = "Learning Cost"
+ ) +
+ theme_minimal(base_size = 14)
+
+cash_curves <- virtEcom_long %>%
+ group_by(
+  `learning-cost`,
+  step
+ ) %>%
+ summarise(
+  cash = mean(`mean-cash`),
+  .groups = "drop"
+ )
+
+ggplot(
+ cash_curves,
+ aes(
+  x = step,
+  y = cash,
+  color = factor(`learning-cost`)
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Average Cash under Costly Learning",
+  x = "Tick",
+  y = "Mean Cash",
+  color = "Learning Cost"
+ ) +
+ theme_minimal(base_size = 14)
+
+debt_curves <- virtEcom_long %>%
+ group_by(
+  `learning-cost`,
+  step
+ ) %>%
+ summarise(
+  debt = mean(`mean-debt`),
+  .groups = "drop"
+ )
+
+ggplot(
+ debt_curves,
+ aes(
+  x = step,
+  y = debt,
+  color = factor(`learning-cost`)
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Debt Dynamics under Costly Learning",
+  x = "Tick",
+  y = "Mean Debt",
+  color = "Learning Cost"
+ ) +
+ theme_minimal(base_size = 14)
+
 
 

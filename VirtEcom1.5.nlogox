@@ -2326,6 +2326,7 @@ Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Sch
       <go>go</go>
       <exitCondition><![CDATA[ticks >= 5000]]></exitCondition>
       <metrics>
+        <metric>learning-cost</metric>
         <metric>entry-threshold</metric>
         <metric>buyer-income</metric>
         <metric>operating-cost</metric>
