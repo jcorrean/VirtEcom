@@ -149,3 +149,165 @@ Comparison <- bind_rows(
  ExpE,
  ExpF
 )
+variable.names(Comparison)
+
+library(tidyverse)
+
+complexity_curves <- Comparison %>%
+ group_by(
+  Model,
+  step
+ ) %>%
+ summarise(
+  complexity =
+   mean(`mean-complexity`),
+  .groups = "drop"
+ )
+
+ggplot(
+ complexity_curves,
+ aes(
+  x = step,
+  y = complexity,
+  color = Model
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Complexity Dynamics",
+  x = "Tick",
+  y = "Mean Complexity"
+ ) +
+ theme_minimal(base_size = 14)
+
+population_curves <- Comparison %>%
+ group_by(
+  Model,
+  step
+ ) %>%
+ summarise(
+  population =
+   mean(`seller-population`),
+  .groups = "drop"
+ )
+
+ggplot(
+ population_curves,
+ aes(
+  step,
+  population,
+  color = Model
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Seller Population",
+  x = "Tick",
+  y = "Population"
+ ) +
+ theme_minimal(base_size = 14)
+
+entry_curves <- Comparison %>%
+ group_by(
+  Model,
+  step
+ ) %>%
+ summarise(
+  entrants =
+   mean(entrants),
+  .groups = "drop"
+ )
+
+ggplot(
+ entry_curves,
+ aes(
+  step,
+  entrants,
+  color = Model
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Entrepreneurial Entry",
+  x = "Tick",
+  y = "Cumulative Entrants"
+ ) +
+ theme_minimal(base_size = 14)
+
+cash_curves <- Comparison %>%
+ group_by(
+  Model,
+  step
+ ) %>%
+ summarise(
+  cash =
+   mean(`mean-cash`),
+  .groups = "drop"
+ )
+
+ggplot(
+ cash_curves,
+ aes(
+  step,
+  cash,
+  color = Model
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Average Cash",
+  x = "Tick",
+  y = "Mean Cash"
+ ) +
+ theme_minimal(base_size = 14)
+
+debt_curves <- Comparison %>%
+ group_by(
+  Model,
+  step
+ ) %>%
+ summarise(
+  debt =
+   mean(`mean-debt`),
+  .groups = "drop"
+ )
+
+ggplot(
+ debt_curves,
+ aes(
+  step,
+  debt,
+  color = Model
+ )
+) +
+ geom_line(linewidth = 1.2) +
+ labs(
+  title = "Average Debt",
+  x = "Tick",
+  y = "Mean Debt"
+ ) +
+ theme_minimal(base_size = 14)
+
+final_complexity <- Comparison %>%
+ filter(step == max(step)) %>%
+ group_by(Model) %>%
+ summarise(
+  complexity =
+   mean(`mean-complexity`),
+  .groups = "drop"
+ )
+
+ggplot(
+ final_complexity,
+ aes(
+  x = Model,
+  y = complexity
+ )
+) +
+ geom_col(fill = "steelblue") +
+ labs(
+  title = "Final Complexity",
+  x = "",
+  y = "Mean Complexity"
+ ) +
+ theme_minimal(base_size = 14)
