@@ -661,4 +661,14 @@ ggplot(
  theme_minimal(base_size = 14)
 
 
+# Exp F -------------------------------------------------------------------
+
+virtEcom_long <-
+  read_behaviorspace_spreadsheet(
+    "Experiments/VirtEcom1.6 Experiment_F_CostlyLearning-spreadsheet.csv"
+  )
+
+variable.names(virtEcom_long)
+colnames(virtEcom_long)[1] <- "step"
+
 
