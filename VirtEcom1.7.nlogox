@@ -290,7 +290,28 @@ to pay-operating-costs
 end
 
 
+to add-capability-with-prerequisites [cap]
 
+  let prereqs
+      capability-prerequisites cap
+
+  foreach prereqs
+  [
+    p ->
+
+    if not member? p capability-set
+    [
+      add-capability-with-prerequisites p
+    ]
+  ]
+
+  if not member? cap capability-set
+  [
+    set capability-set
+        lput cap capability-set
+  ]
+
+end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INITIALIZE SELLER
@@ -298,11 +319,10 @@ end
 
 to initialize-seller
 
-
-  
   set cash 1000
   set debt 0
   set risk-tolerance random-float 1
+
   set shape "person"
   set color blue
   set size 1.5
@@ -310,12 +330,25 @@ to initialize-seller
 
   setxy random-xcor random-ycor
 
-  
+  set capability-set []
 
-set capability-set
-    sentence
-    (n-of (2 + random 3) common-capabilities)
-    (n-of (random 3) rare-capabilities)
+  ;; elegir capacidades objetivo
+  let target-capabilities
+      n-of
+      (2 + random 3)
+      capability-universe
+
+  ;; agregar cada capacidad junto con toda
+  ;; su cadena de prerrequisitos
+  foreach target-capabilities
+  [
+    cap ->
+
+    add-capability-with-prerequisites cap
+  ]
+
+  set capability-set
+      remove-duplicates capability-set
 
   set revenue 0
   set profit 0
@@ -323,7 +356,7 @@ set capability-set
   set reputation random-float 1
 
   set complexity length capability-set
-  
+
   set diversification 0
   set kc1 0
 
