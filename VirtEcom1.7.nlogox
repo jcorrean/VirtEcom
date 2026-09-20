@@ -330,22 +330,12 @@ to initialize-seller
 
   setxy random-xcor random-ycor
 
-  set capability-set []
+  ;; capacidades iniciales sólo desde raíces
 
-  ;; elegir capacidades objetivo
-  let target-capabilities
+  set capability-set
       n-of
-      (2 + random 3)
-      capability-universe
-
-  ;; agregar cada capacidad junto con toda
-  ;; su cadena de prerrequisitos
-  foreach target-capabilities
-  [
-    cap ->
-
-    add-capability-with-prerequisites cap
-  ]
+      (1 + random 2)
+      root-capabilities
 
   set capability-set
       remove-duplicates capability-set
@@ -1002,6 +992,16 @@ to-report capability-prerequisites [cap]
   [
     report item 1 first record
   ]
+
+end
+
+to-report root-capabilities
+
+  report
+    map first
+    filter
+    [x -> empty? item 1 x]
+    capability-requirements
 
 end
 
