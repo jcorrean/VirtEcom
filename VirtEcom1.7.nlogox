@@ -333,8 +333,6 @@ to initialize-seller
   ;; capacidades iniciales sólo desde raíces
 
   set capability-set
-      n-of
-      (1 + random 2)
       root-capabilities
 
   set capability-set
@@ -1182,35 +1180,44 @@ end
     <slider x="5" step="500" y="105" max="20000" width="250" display="entry-threshold" height="50" min="0" direction="Horizontal" default="5000.0" variable="entry-threshold"></slider>
     <slider x="5" step="25" y="50" max="250" width="250" display="learning-cost" height="50" min="0" direction="Horizontal" default="50.0" variable="learning-cost"></slider>
   </widgets>
-  <info><![CDATA[
-## VirtECom 1.6
+  <info><![CDATA[# VirtECom 1.7
 
-**An Agent-Based Model of Economic Complexity,
-Financial Survival, Entrepreneurial Entry,
-and Technological Proximity in Digital Marketplaces**
+**An Agent-Based Model of Economic Complexity, Financial Survival, Entrepreneurial Entry, Technological Proximity, and Capability Dependencies in Digital Marketplaces**
 
-VirtECom 1.6 extends VirtECom 1.5 by replacing random capability acquisition with technologically related capability learning.
+VirtECom 1.7 extends VirtECom 1.6 by introducing capability dependencies into the process of capability accumulation and by enforcing dependency-consistent initial conditions.
 
-In previous versions, firms could acquire any capability from the global capability universe regardless of their existing knowledge base. In VirtECom 1.6, capability acquisition is constrained by technological proximity. Firms may only learn capabilities that are adjacent to their existing capabilities within a predefined capability network.
+In VirtECom 1.6, firms could only acquire capabilities that were technologically related to capabilities they already possessed. Although this introduced path dependence into learning trajectories, all capabilities remained potentially accessible if firms followed the appropriate technological paths.
 
-This modification draws inspiration from the Product Space literature and the concept of relatedness in Economic Complexity Theory. Productive diversification is no longer modeled as a random exploration process, but as a path-dependent trajectory shaped by the capabilities firms already possess.
+VirtECom 1.7 introduces an additional constraint. Capabilities are no longer defined solely by technological proximity but also by prerequisite relationships. A capability may appear within a firm's technological frontier yet remain inaccessible unless all required capabilities have already been acquired.
 
-The central purpose of VirtECom 1.6 is to investigate whether technological proximity slows the diffusion of productive knowledge and alters the evolution of productive complexity relative to the random learning dynamics implemented in VirtECom 1.5.
+This modification draws inspiration from the Economic Complexity perspective that productive knowledge is highly complementary and distributed. Sophisticated capabilities are not difficult to acquire merely because they are technologically distant but because they depend on the cumulative acquisition of multiple complementary capabilities.
 
+VirtECom 1.7 therefore models productive knowledge as a hierarchical dependency structure. Complex capabilities emerge through cumulative and path-dependent capability acquisition processes rather than through direct access to isolated pieces of knowledge.
+
+Unlike previous versions, capability dependencies are enforced consistently throughout the model. Initial seller endowments, entrepreneurial entry, and learning dynamics all respect the same dependency structure. Consequently, no seller may possess a capability without simultaneously possessing all of its prerequisite capabilities.
+
+The central purpose of VirtECom 1.7 is to investigate whether capability dependencies alter the diffusion of productive knowledge, the emergence of productive complexity, and the long-run structure of seller-product networks.
 
 **ASSUMPTIONS**
+
 This model is based on the following simplifying assumptions:
 
 - Capabilities are heterogeneous and differ in their initial prevalence.
 - Capabilities are divided into common and rare capabilities.
-- Rare capabilities are initially less common than operational and commercial capabilities.
-- All capabilities are assumed to provide potential productive value once acquired, although their accessibility depends on technological proximity.
-- Sellers initially possess between two and six capabilities drawn from common and rare capability pools.
+- All capabilities are assumed to provide potential productive value once acquired.
 - Products are generated from predefined complementary capability bundles.
-- Sellers can offer a product only if they possess all of the capabilities required by that product.
+- Sellers can offer a product only if they possess all capabilities required by that product.
 - Capabilities can be acquired through learning but cannot be lost.
 - Capability acquisition is constrained by technological proximity.
-- Firms learn new capabilities from a frontier of technologically related capabilities rather than from the entire capability universe.
+- Capability acquisition is also constrained by prerequisite relationships.
+- Firms learn new capabilities from a technological frontier composed of adjacent capabilities.
+- Firms cannot acquire capabilities whose prerequisites are not satisfied.
+- Capabilities are connected through a technological proximity network.
+- Learning follows path-dependent trajectories rather than random jumps across the capability space.
+- Productive knowledge accumulates cumulatively through dependency chains.
+- Marketing is the unique root capability from which all other capabilities ultimately derive.
+- Initial seller endowments must satisfy all capability dependencies.
+- Entrepreneurial entrants inherit dependency-consistent capability portfolios.
 - Sellers may leave the marketplace if they become financially insolvent.
 - Products never disappear from the marketplace.
 - Seller-product links can be created through capability accumulation. Existing links disappear only when sellers exit the marketplace.
@@ -1225,111 +1232,120 @@ This model is based on the following simplifying assumptions:
 - Buyers receive a fixed exogenous income each simulation step.
 - Buyer income is independent of seller performance.
 - The replenishment mechanism represents an external source of purchasing power rather than a fully endogenous monetary circuit.
-- Capabilities are connected through a technological proximity network.
-- Firms can only acquire capabilities that are technologically adjacent to capabilities they already possess.
-- Learning follows path-dependent trajectories rather than random jumps across the capability space.
-- The capability adjacency structure represents a simplified and stylized version of the Product Space.
-
 
 **KNOWN LIMITATIONS**
 
 VirtECom should be interpreted as a proof-of-concept model. Current limitations include:
 
-- Capability rarity only affects initial conditions; all capabilities remain equally learnable during the simulation.
-- Capability complementarities are represented through fixed capability bundles rather than empirically calibrated production structures.
-- Capabilities can be acquired but cannot be lost.
-- Products cannot disappear from the marketplace once created.
-- Seller-product links can be created through capability accumulation. 
-- Existing links disappear only when sellers exit the marketplace.
-- Knowledge spillovers between sellers are not represented.
-- Consumer attention constraints are not modeled.
-- Capability acquisition is driven by a simple profit-based learning mechanism and does not incorporate organizational learning, training investments, or technological barriers.
-- Capabilities remain ultimately reachable through sequences of adjacent capabilities, which may still lead to widespread diffusion over sufficiently long simulation periods.
-- Related learning constrains learning paths but does not currently model capability complementarities requiring multiple prerequisites.
-- The model currently represents seller complexity as the number of capabilities possessed by a seller rather than as an Economic Complexity Index (ECI)-like measure.
-- Product capability bundles are stylized and intended for theoretical exploration rather than empirical representation of specific industries.
-- The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
-- The seller-product network may still become denser than empirical Country-Product networks as capabilities accumulate through learning.
-- Credit markets are highly simplified and do not include interest rates, collateral, repayment schedules, or lender behavior.
-- Operating costs are fixed and identical across sellers.
-- Buyers' income is exogenously injected into the system rather than generated through endogenous economic interactions.
-- Periodic buyer income is introduced exogenously and is not funded by seller revenues, wages, taxes, or financial institutions.
-- The model does not yet implement a closed money-flow circuit linking seller revenues, wages, and consumer purchasing power.
-- Demand replenishment may artificially sustain purchasing power relative to real-world market environments.
-- Financial distress is represented through cash and debt dynamics rather than detailed accounting or balance-sheet structures.
-- Seller re-entry and firm creation are not currently modeled.
-- The capability adjacency network is manually specified and does not rely on empirical estimates of technological relatedness.
-- The capability adjacency network was designed heuristically and does not currently rely on empirical measures of technological proximity.
-
-
-## RESEARCH QUESTIONS
+Capability dependencies are manually specified and do not originate from empirical production data.
+The capability adjacency network is manually specified and does not rely on empirical estimates of technological relatedness.
+The hierarchy of capabilities assumes a single technological root capability.
+Dependency structures are static and cannot evolve during the simulation.
+Capability dependencies represent stylized knowledge requirements rather than empirically calibrated organizational processes.
+The model does not represent teamwork, labor specialization, or intra-firm knowledge distribution. Dependency structures serve as a simplified proxy for collective know-how.
+Capability complementarities are represented through fixed capability bundles rather than empirically calibrated production structures.
+Capabilities can be acquired but cannot be lost.
+Products cannot disappear from the marketplace once created.
+Seller-product links can be created through capability accumulation.
+Existing links disappear only when sellers exit the marketplace.
+Knowledge spillovers between sellers are not represented.
+Consumer attention constraints are not modeled.
+Capability acquisition is driven by a simple profit-based learning mechanism and does not incorporate organizational learning, formal training investments, or technological barriers.
+The model currently represents seller complexity as the number of capabilities possessed by a seller rather than as an Economic Complexity Index (ECI)-like measure.
+Product capability bundles are stylized and intended for theoretical exploration rather than empirical representation of specific industries.
+The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
+The seller-product network may still become denser than empirical Country-Product networks.
+Credit markets are highly simplified and do not include interest rates, collateral, repayment schedules, or lender behavior.
+Operating costs are fixed and identical across sellers.
+Buyers' income is exogenously injected into the system rather than generated through endogenous economic interactions.
+The model does not yet implement a closed money-flow circuit linking seller revenues, wages, and consumer purchasing power.
+Financial distress is represented through cash and debt dynamics rather than detailed accounting or balance-sheet structures.
+Seller re-entry and firm creation are not currently modeled beyond entrepreneurial swarm entry.
+RESEARCH QUESTIONS
 
 VirtECom was designed to explore the following questions:
 
-1. Can mechanisms commonly associated with Economic Complexity Theory emerge in digital marketplaces?
+Can mechanisms commonly associated with Economic Complexity Theory emerge in digital marketplaces?
 
-2. How does the structure of seller capabilities influence product diversification and ubiquity?
+How does the structure of seller capabilities influence product diversification and ubiquity?
 
-3. Does buyer demand indirectly affect structural complexity through capability accumulation?
+Does buyer demand indirectly affect structural complexity through capability accumulation?
 
-4. How do changes in the numbers of sellers, buyers, and products alter the properties of the seller-product network?
+How do changes in the numbers of sellers, buyers, and products alter the properties of the seller-product network?
 
-5. Can marketplaces exhibit complexity-related dynamics similar to those observed in national economies?
+Can marketplaces exhibit complexity-related dynamics similar to those observed in national economies?
 
-6. How do rare capabilities influence the initial density of seller-product networks?
+How do rare capabilities influence the initial density of seller-product networks?
 
-7. Can capability accumulation transform initially infeasible products into feasible products over time?
+Can capability accumulation transform initially infeasible products into feasible products over time?
 
-8. How do complementary capability requirements affect diversification, ubiquity, and network expansion?
+How do complementary capability requirements affect diversification, ubiquity, and network expansion?
 
-9. How do operating costs affect the long-term survival of sellers?
+How do operating costs affect the long-term survival of sellers?
 
-10. How does entrepreneurial risk-taking influence capability accumulation and firm survival?
+How does entrepreneurial risk-taking influence capability accumulation and firm survival?
 
-11. Under what conditions do financially fragile marketplaces experience firm exit and network contraction?
+Under what conditions do financially fragile marketplaces experience firm exit and network contraction?
 
-12. How do financial constraints interact with capability accumulation processes?
+How do financial constraints interact with capability accumulation processes?
 
-13. To what extent does demand exhaustion contribute to marketplace collapse and firm exit?
+To what extent does demand exhaustion contribute to marketplace collapse and firm exit?
 
-14. Do operating costs continue to generate firm exit when buyer purchasing power is continuously replenished?
+Do operating costs continue to generate firm exit when buyer purchasing power is continuously replenished?
 
-15. To what extent are marketplace collapses driven by financial pressures versus demand exhaustion?
+To what extent are marketplace collapses driven by financial pressures versus demand exhaustion?
 
-16. How sensitive are marketplace survival dynamics to the rate of demand replenishment?
+How sensitive are marketplace survival dynamics to the rate of demand replenishment?
 
-17. How does technological proximity influence the diffusion of productive capabilities?
+How does technological proximity influence the diffusion of productive capabilities?
 
-18. Does related capability learning preserve productive heterogeneity relative to random capability acquisition?
+Does related capability learning preserve productive heterogeneity relative to random capability acquisition?
 
-19. How does path-dependent capability acquisition affect entrepreneurial entry and market evolution?
+How does path-dependent capability acquisition affect entrepreneurial entry and market evolution?
 
+How do capability dependencies affect the diffusion of productive knowledge?
 
-## HOW IT WORKS
+Can dependency structures prevent or delay convergence toward highly diversified capability portfolios?
+
+How do capability dependencies influence the emergence of sophisticated capabilities such as AI Recommendation?
+
+To what extent do capability dependencies generate persistent productive bottlenecks?
+
+How do dependency-consistent initial conditions affect the evolution of seller-product networks?
+
+HOW IT WORKS
 
 VirtECom contains three classes of agents:
 
-**Sellers**
+Sellers
 
-In VirtECom 1.6, capability acquisition is constrained by technological proximity. 
-
-Related Learning
-
-In VirtECom 1.6, capability acquisition is constrained by technological proximity. Capability acquisition is modeled as a path-dependent process. Firms do not learn arbitrary capabilities. Instead, new capabilities are drawn from a technological frontier derived from a predefined capability adjacency network. This mechanism introduces technological relatedness into the evolution of productive knowledge and replaces the random capability acquisition process implemented in previous versions.
-
-Firms do not learn arbitrary capabilities. Instead, new capabilities are drawn from a frontier of technologically related capabilities defined by the capability adjacency network.
+Sellers possess productive capabilities, generate revenue, accumulate profit, maintain liquidity, and may incur debt in order to continue operating.
 
 Each seller maintains:
 
-- Capability Set
-- Revenue
-- Profit
-- Cash
-- Debt
-- Risk Tolerance
-- Complexity
-- Diversification
-- KC1
+Capability Set
+Revenue
+Profit
+Cash
+Debt
+Risk Tolerance
+Complexity
+Diversification
+KC1
+Related Learning
+
+In VirtECom 1.7, capability acquisition is constrained by technological proximity. Firms do not learn arbitrary capabilities. Instead, new capabilities are drawn from a technological frontier derived from a predefined capability adjacency network.
+
+Capability Dependencies
+
+Technological proximity alone is insufficient for capability acquisition.
+
+Each capability may require one or more prerequisite capabilities. A capability becomes learnable only when:
+
+It belongs to the firm's technological frontier.
+All dependency requirements are satisfied.
+
+This mechanism introduces hierarchical knowledge structures into the model. Productive complexity is accumulated progressively through dependency chains rather than through independent capability acquisition.
 
 Financial Survival
 
@@ -1339,104 +1355,161 @@ If liquidity becomes negative, sellers may seek external financing. The probabil
 
 Sellers that accumulate excessive debt while remaining financially distressed may exit the marketplace. When a seller exits, all seller-product links associated with that seller disappear automatically.
 
-**Products**
+Products
 
-Products are generated from predefined complementary capability bundles. These bundles represent stylized combinations of capabilities that sellers must possess in order to offer a product. Each product maintains:
+Products are generated from predefined complementary capability bundles.
 
-- Required capabilities
-- Product category
-- Price
-- Quality
-- Complexity
-- Sales
-- Ubiquity
-- KP1
+Each product maintains:
 
-**Buyers**
+Required Capabilities
+Product Category
+Price
+Quality
+Complexity
+Sales
+Ubiquity
+KP1
+
+Products become feasible only when sellers possess all required capabilities.
+
+Buyers
 
 Buyers possess:
 
-- Budget
-- Preferences
-- Periodic income
+Budget
+Preferences
+Periodic Income
 
-At every simulation step, buyers receive a fixed income payment that replenishes purchasing power. This mechanism replenishes purchasing power and partially offsets demand exhaustion. It allows the model to explore the interaction between sustained demand and financial selection among sellers.
+At every simulation step, buyers receive a fixed income payment that replenishes purchasing power.
 
 Buyers search for products that match their preferences and budget constraints.
 
-**Bipartite Network Formation**
+Bipartite Network Formation
 
-In VirtECom many products are initially infeasible because sellers may lack one or more rare capabilities. As sellers learn and accumulate capabilities, new seller-product links may emerge. A seller-product link is formed whenever:
+Many products are initially infeasible because sellers may lack required capabilities.
 
+As firms accumulate capabilities, new seller-product links may emerge.
+
+A seller-product link is formed whenever:
+
+Plain Text
+1
 RequiredCapabilities ⊆ SellerCapabilities
+Show more lines
 
-A seller-product link does not represent a transaction. It represents the capability of a seller to offer a product given its current capability portfolio. This bipartite structure serves as the analog of the Country-Product matrix commonly used in Economic Complexity research introduced by Hidalgo and Hausmann (2009).
+A seller-product link does not represent a transaction. It represents the ability of a seller to offer a product given its current capability portfolio.
+
+This bipartite structure serves as the analogue of the Country-Product matrix used in Economic Complexity research.
 
 KC1 = Mean ubiquity of products connected to a seller.
 
 KP1 = Mean diversification of sellers connected to a product.
 
-These indicators represent first-order reflections inspired by the Method of Reflections proposed in Economic Complexity Theory (Hidalgo & Hausmann, 2009).
+These indicators represent first-order reflections inspired by the Method of Reflections proposed by Hidalgo and Hausmann (2009).
 
-## HOW TO USE IT
+HOW TO USE IT
 
 During each tick:
 
-- Buyers receive periodic income.
-- Sellers pay operating costs.
-- Buyers search for products.
-- Purchases occur.
-- Sellers collect revenue and profit.
-- Sellers may acquire capabilities from their technological frontier.
-- Sellers may seek external financing.
-- Financially distressed sellers may exit the marketplace.
-- Seller-product connections may expand as sellers acquire new capabilities.
-- Network metrics are updated.
-
-## THINGS TO NOTICE
+Buyers receive periodic income.
+Sellers pay operating costs.
+Buyers search for products.
+Purchases occur.
+Sellers collect revenue and profit.
+Sellers may acquire capabilities from their technological frontier.
+Dependency requirements are verified.
+Sellers may seek external financing.
+Financially distressed sellers may exit the marketplace.
+Entrepreneurial entry may occur.
+Seller-product connections may expand as sellers accumulate capabilities.
+Network metrics are updated.
+THINGS TO NOTICE
 
 Pay attention to the following indicators.
 
-**Diversification**: Average number of products sellers are connected to. This is the equivalent to kc0 in economic complexity. 
+Diversification
 
-**Ubiquity**: Average number of sellers connected to a product. This is the equivalent to kp0 in economic complexity.
+Average number of products connected to sellers.
 
-KC1 refers to Average ubiquity of products associated with a seller, while KP1 is the Average diversification of sellers associated with a product.
+Equivalent to kc₀.
 
-**Network density** is calculated as count offers / (count sellers * count products) which measures how dense the seller-product matrix is.
+Ubiquity
 
-In VirtECom, seller complexity is operationalized as the number of capabilities possessed by a seller. It should not be interpreted as an Economic Complexity Index (ECI).
+Average number of sellers connected to a product.
 
-Products with Zero Offers: Products that currently have no eligible sellers.
+Equivalent to kp₀.
 
-Sellers with Zero Offers: Sellers that currently cannot offer any product.
+KC1
 
-AI Sellers: Number of sellers possessing the capability "ai-recommendation".
+Average ubiquity of products associated with a seller.
 
-Cloud Sellers: Number of sellers possessing the capability "cloud-computing".
-￼
-Observe how network density evolves over time. Unlike VirtECom 1.0, network density is no longer entirely determined by the initial distribution of capabilities and may increase as sellers acquire new capabilities.
+KP1
 
-Mean Cash: Average liquidity held by surviving sellers.
+Average diversification of sellers associated with a product.
 
-Mean Debt: Average outstanding debt across surviving sellers.
+Network Density
+Plain Text
+1
+count offers / (count sellers * count products)
+Show more lines
 
-Indebted Sellers: Number of sellers carrying debt.
+Measures how dense the seller-product matrix is.
 
-Sellers Alive: Number of sellers currently active in the marketplace.
+Mean Complexity
 
-Sellers Exited: Number of sellers that have exited the marketplace.
+Average number of capabilities possessed by surviving sellers.
 
-Client Budget: Average remaining purchasing power among buyers.
+AI Sellers
 
-Technological Frontier: The set of capabilities currently adjacent to a seller's existing capability portfolio.
+Number of sellers possessing:
 
-Observe whether firms follow distinct technological trajectories or whether capabilities eventually diffuse throughout the entire marketplace.
+Plain Text
+1
+ai-recommendation
+Show more lines
+Cloud Computing
 
-Compare the diffusion of AI Recommendation and Cloud Computing capabilities against previous versions of the model. These capabilities are now reachable only through specific technological pathways.
+Number of sellers possessing:
 
+Plain Text
+1
+cloud-computing
+Show more lines
+Technological Frontier
 
-## THINGS TO TRY
+Capabilities that are technologically adjacent to a seller's current capabilities.
+
+Eligible Frontier
+
+Capabilities that are both technologically adjacent and satisfy all dependency requirements.
+
+Mean Cash
+
+Average liquidity across surviving sellers.
+
+Mean Debt
+
+Average debt across surviving sellers.
+
+Sellers Alive
+
+Active sellers.
+
+Sellers Exited
+
+Exited sellers.
+
+Client Budget
+
+Average buyer purchasing power.
+
+Observe whether dependency constraints generate bottlenecks that delay or prevent the emergence of sophisticated capabilities.
+
+Observe whether advanced capabilities remain inaccessible despite appearing within technological frontiers.
+
+Compare the diffusion rates of AI Recommendation and Cloud Computing against previous versions of the model.
+
+THINGS TO TRY
 
 Increase the number of sellers while keeping buyers and products constant.
 
@@ -1448,96 +1521,123 @@ Observe changes in ubiquity and network density.
 
 Increase the number of buyers while holding sellers and products constant.
 
-Observe whether demand influences complexity through learning and capability accumulation.
+Observe whether demand influences capability accumulation.
 
-Use BehaviorSpace to explore combinations of:
+Monitor the diffusion of:
 
-Sellers: 20, 50, 100
-Customers: 20, 100, 500
-Products: 10, 25, 50
+Customer Service
+Data Analytics
+Cloud Computing
+AI Recommendation
 
-Compare network density immediately after setup and after several hundred ticks.
+Observe whether sophisticated capabilities generate bottlenecks.
 
-Observe whether products with zero offers disappear over time.
+Compare:
 
-Monitor the evolution of AI Sellers and Cloud Sellers.
+Plain Text
+1
+VirtECom 1.6
+Show more lines
 
-Examine whether capability accumulation precedes increases in network density.
+versus
 
-## EXTENDING THE MODEL
+Plain Text
+1
+VirtECom 1.7
+Show more lines
+
+using identical parameter settings.
+
+Measure differences in:
+
+Mean Complexity
+Network Density
+AI Sellers
+Cloud Computing
+Survival Rate
+Entrepreneurial Entry
+EXTENDING THE MODEL
 
 Potential future extensions include:
 
-- Capability dependencies requiring multiple prerequisite capabilities
-- Endogenous demand generation
-- Closed money-flow circuits
-- Entry of new firms
-- Dynamic credit markets
-- Capability depreciation
-- Knowledge spillovers between sellers
-- Interest rates and repayment schedules
-- Consumer attention constraints
-- Reputation systems
-- Advanced Economic Complexity measures (ECI-like indicators)
+Multiple technological roots
+Endogenous capability creation
+Team-based capability accumulation
+Collective knowledge pools
+Knowledge spillovers
+Dynamic dependency structures
+Capability depreciation
+Endogenous demand generation
+Closed money-flow circuits
+Dynamic credit markets
+Consumer attention constraints
+Reputation systems
+Advanced Economic Complexity measures (ECI-like indicators)
+NETLOGO FEATURES
 
-## NETLOGO FEATURES
+VirtECom 1.7 makes use of:
 
-VirtECom makes use of:
+Multiple agent breeds
+Bipartite seller-product networks
+Capability-based product eligibility
+Related learning
+Capability dependency structures
+Dependency-consistent initialization
+Buyer preference matching
+Dynamic network expansion
+BehaviorSpace-compatible experimentation
+Entrepreneurial entry
+Operating cost dynamics
+Cash accumulation and depletion
+Debt financing
+Risk-tolerance heterogeneity
+Firm exit mechanisms
+EXPERIMENTAL MOTIVATION OF THIS VERSION
 
-- Multiple agent breeds
-- Bipartite seller-product networks
-- Capability-based product eligibility
-- Buyer preference matching
-- Adaptive capability acquisition
-- Dynamic network expansion
-- BehaviorSpace-compatible experimentation
-- Common and rare capability pools
-- Complementary capability bundles
-- Operating cost dynamics
-- Cash accumulation and depletion
-- Debt financing
-- Risk-tolerance heterogeneity
-- Firm exit mechanisms
+VirtECom 1.7 was motivated by a limitation identified in VirtECom 1.6.
 
+Although related learning introduced technological path dependence, sophisticated capabilities eventually remained accessible through sufficiently long learning trajectories.
 
-## EXPERIMENTAL FINDINGS OF THIS VERSION
+VirtECom 1.7 introduces capability dependencies to represent the complementary nature of productive knowledge.
 
-VirtECom 1.6 was motivated by a result obtained in VirtECom 1.5. Introducing monetary costs for capability acquisition did not prevent convergence toward high capability complexity. This suggested that the primary driver of capability diffusion was not the cost of learning but the unrestricted accessibility of capabilities.
+The central hypothesis is that productive complexity depends not only on technological proximity but also on the accumulation of prerequisite capabilities.
 
-The central hypothesis of VirtECom 1.6 is that capability diffusion follows technologically related trajectories rather than random acquisition paths, leading to slower diffusion dynamics and potentially altering the rate and trajectory of capability diffusion.
+Consequently, advanced capabilities may remain inaccessible even when they are technologically adjacent, generating bottlenecks in knowledge diffusion and potentially altering the long-run evolution of the seller-product network.
 
-VirtECom 1.6 therefore replaces random capability acquisition with related learning based on technological proximity. The central hypothesis is that capability accumulation follows path-dependent trajectories and that technological proximity may slow capability diffusion even when the eventual equilibrium remains similar.
+RELATED MODELS
+Economic Complexity Models
 
+VirtECom is conceptually inspired by the Economic Complexity framework of Hidalgo and Hausmann (2009), where productive capabilities shape diversification and economic structure.
 
+The model reinterprets the Country-Product matrix as a Seller-Product network.
 
+Evolutionary and Neo-Schumpeterian Models
 
-## RELATED MODELS
-VirtECom combines concepts that are typically studied separately in the literature.
+VirtECom is related to evolutionary models emphasizing learning, adaptation, capability accumulation, path dependence, and structural change.
 
-**Economic Complexity Models**
+Product Space Models
 
-VirtECom is conceptually inspired by the Economic Complexity framework of Hidalgo and Hausmann (2009), where productive capabilities shape diversification and economic structure. The model reinterprets the traditional Country-Product matrix as a Seller-Product network.
+VirtECom 1.7 incorporates two core ideas of the Product Space literature:
 
-**Evolutionary and Neo-Schumpeterian Models**
+Technological relatedness.
+Capability complementarities.
+Digital Marketplace Models
 
-VirtECom is related to evolutionary models that emphasize learning, adaptation, capability accumulation, and path dependence. In particular, the model shares similarities with Neo-Schumpeterian Agent-Based Models that investigate innovation and structural change.
+VirtECom also relates to Agent-Based Models of digital marketplaces exploring buyer preferences, product choice, and market structure.
 
-**Digital Marketplace Models**
+Unlike most marketplace models, VirtECom explicitly incorporates productive capabilities, dependency structures, and Economic Complexity indicators.
 
-VirtECom also relates to Agent-Based Models of digital marketplaces that explore buyer preferences, product choice, and market structure. Unlike most marketplace models, VirtECom explicitly incorporates capability-based production constraints and Economic Complexity indicators.
+CREDITS AND REFERENCES
 
+Antonelli, C., & Ferraris, G. (2011). Innovation as an emerging system property: an agent based simulation model. Journal of Artificial Societies and Social Simulation, 14(2), 1.
 
-## CREDITS AND REFERENCES
+Bruun, C. (2003). The Economy as an Agent-Based Whole: Simulating Schumpeterian Dynamics. Industry and Innovation, 10(4), 475-491.
 
-Antonelli, C., & Ferraris, G. (2011). Innovation as an emerging system property: an agent based simulation model. *Journal of Artificial Societies and Social Simulation, 14*(2), 1. https://jasss.soc.surrey.ac.uk/14/2/1.html
+Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. Proceedings of the National Academy of Sciences, 106(26), 10570-10575.
 
-Bruun, C. (2003). The Economy as an Agent-Based Whole-Simulating Schumpetarian Dynamics, *Industry and Innovation, 10*(4), 475-491 https://doi.org/10.1080/1366271032000163694
+Li, T., Wang, S., Zhou, D., & Razzaq, A. (2025). Consumer attention and market concentration in e-commerce: an agent-based perspective. Journal of Economic Interaction and Coordination, 20, 959-985.
 
-Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the national academy of sciences, 106*(26), 10570-10575.
-
-Li, T., Wang, S., Zhou, D. & Razzaq, A. (2025). Consumer attention and market concentration in e‑commerce: an agent‑based perspective, *Journal of Economic Interaction and Coordination, 20* 959–985 https://doi.org/10.1007/s11403-025-00443-5
-
-Pyka, A., & Fagiolo, G. (2007). Agent-based modelling: A methodology for neo-Schumpeterian economics'. In Hanusch, H. and Pyka, A. (Eds). *Elgar companion to neo-Schumpeterian economics,* (pp. 467 – 492), Edward Elgar Publishing, Cheltenham, UK]]></info>
+Pyka, A., & Fagiolo, G. (2007). Agent-Based Modelling: A Methodology for Neo-Schumpeterian Economics. In Hanusch & Pyka (Eds.), Elgar Companion to Neo-Schumpeterian Economics. Edward Elgar Publishing.]]></info>
   <turtleShapes>
     <shape name="default" rotatable="true" editableColorIndex="0">
       <polygon color="-1920102913" filled="true" marked="true">
