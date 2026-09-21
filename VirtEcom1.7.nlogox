@@ -45,11 +45,12 @@ sellers-own [
   complexity
   diversification
   kc1
-
   cash
   debt
   risk-tolerance
   swarm-triggered?
+  frontier-size
+  eligible-frontier-size
 
 ]
 
@@ -322,6 +323,8 @@ to initialize-seller
   set cash 1000
   set debt 0
   set risk-tolerance random-float 1
+  set frontier-size 0
+  set eligible-frontier-size 0
 
   set shape "person"
   set color blue
@@ -832,8 +835,14 @@ to learn-capabilities
           filter
           [x -> not member? x capability-set]
           frontier
+      set frontier-size
+          length frontier
+
 
       let eligible-frontier []
+      set eligible-frontier-size
+      length eligible-frontier
+
 
 foreach frontier
 [
@@ -1053,6 +1062,30 @@ to-report zero-offer-sellers
 
 end
 
+to-report mean-frontier-size
+
+  ifelse any? sellers
+  [
+    report mean [frontier-size] of sellers
+  ]
+  [
+    report 0
+  ]
+
+end
+
+to-report mean-eligible-frontier-size
+
+  ifelse any? sellers
+  [
+    report mean [eligible-frontier-size] of sellers
+  ]
+  [
+    report 0
+  ]
+
+end
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1255,6 +1288,18 @@ end
         <update>plot zero-offer-sellers</update>
       </pen>
     </plot>
+    <plot x="495" autoPlotX="true" yMax="10.0" autoPlotY="true" y="740" xMin="0.0" height="175" legend="true" xMax="10.0" yMin="0.0" width="230" display="Frontier vs Eligible Frontier">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="Frontier" color="-14070903" legend="true">
+        <setup></setup>
+        <update>plot mean-frontier-size</update>
+      </pen>
+      <pen interval="1.0" mode="0" display="Eligible" color="-2674135" legend="true">
+        <setup></setup>
+        <update>plot mean-eligible-frontier-size</update>
+      </pen>
+    </plot>
   </widgets>
   <info><![CDATA[# VirtECom 1.7
 
@@ -1313,31 +1358,32 @@ This model is based on the following simplifying assumptions:
 
 VirtECom should be interpreted as a proof-of-concept model. Current limitations include:
 
-Capability dependencies are manually specified and do not originate from empirical production data.
-The capability adjacency network is manually specified and does not rely on empirical estimates of technological relatedness.
-The hierarchy of capabilities assumes a single technological root capability.
-Dependency structures are static and cannot evolve during the simulation.
-Capability dependencies represent stylized knowledge requirements rather than empirically calibrated organizational processes.
-The model does not represent teamwork, labor specialization, or intra-firm knowledge distribution. Dependency structures serve as a simplified proxy for collective know-how.
-Capability complementarities are represented through fixed capability bundles rather than empirically calibrated production structures.
-Capabilities can be acquired but cannot be lost.
-Products cannot disappear from the marketplace once created.
-Seller-product links can be created through capability accumulation.
-Existing links disappear only when sellers exit the marketplace.
-Knowledge spillovers between sellers are not represented.
-Consumer attention constraints are not modeled.
-Capability acquisition is driven by a simple profit-based learning mechanism and does not incorporate organizational learning, formal training investments, or technological barriers.
-The model currently represents seller complexity as the number of capabilities possessed by a seller rather than as an Economic Complexity Index (ECI)-like measure.
-Product capability bundles are stylized and intended for theoretical exploration rather than empirical representation of specific industries.
-The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
-The seller-product network may still become denser than empirical Country-Product networks.
-Credit markets are highly simplified and do not include interest rates, collateral, repayment schedules, or lender behavior.
-Operating costs are fixed and identical across sellers.
-Buyers' income is exogenously injected into the system rather than generated through endogenous economic interactions.
-The model does not yet implement a closed money-flow circuit linking seller revenues, wages, and consumer purchasing power.
-Financial distress is represented through cash and debt dynamics rather than detailed accounting or balance-sheet structures.
-Seller re-entry and firm creation are not currently modeled beyond entrepreneurial swarm entry.
-RESEARCH QUESTIONS
+- Capability dependencies are manually specified and do not originate from empirical production data.
+- The capability adjacency network is manually specified and does not rely on empirical estimates of technological relatedness.
+- The hierarchy of capabilities assumes a single technological root capability.
+- Dependency structures are static and cannot evolve during the simulation.
+- Capability dependencies represent stylized knowledge requirements rather than empirically calibrated organizational processes.
+- The model does not represent teamwork, labor specialization, or intra-firm knowledge distribution. Dependency structures serve as a simplified proxy for collective know-how.
+- Capability complementarities are represented through fixed capability bundles rather than empirically calibrated production structures.
+- Capabilities can be acquired but cannot be lost.
+- Products cannot disappear from the marketplace once created.
+- Seller-product links can be created through capability accumulation.
+- Existing links disappear only when sellers exit the marketplace.
+- Knowledge spillovers between sellers are not represented.
+- Consumer attention constraints are not modeled.
+- Capability acquisition is driven by a simple profit-based learning mechanism and does not incorporate organizational learning, formal training investments, or technological barriers.
+- The model currently represents seller complexity as the number of capabilities possessed by a seller rather than as an Economic Complexity Index (ECI)-like measure.
+- Product capability bundles are stylized and intended for theoretical exploration rather than empirical representation of specific industries.
+- The model does not calculate ECI (Economic Complexity Index) or PCI (Product Complexity Index); it currently implements diversification (kc₀), ubiquity (kp₀), and first-order reflections (kc₁ and kp₁).
+- The seller-product network may still become denser than empirical Country-Product networks.
+- Credit markets are highly simplified and do not include interest rates, collateral, repayment schedules, or lender behavior.
+- Operating costs are fixed and identical across sellers.
+- Buyers' income is exogenously injected into the system rather than generated through endogenous economic interactions.
+- The model does not yet implement a closed money-flow circuit linking seller revenues, wages, and consumer purchasing power.
+- Financial distress is represented through cash and debt dynamics rather than detailed accounting or balance-sheet structures.
+- Seller re-entry and firm creation are not currently modeled beyond entrepreneurial swarm entry.
+
+# RESEARCH QUESTIONS
 
 VirtECom was designed to explore the following questions:
 
@@ -1389,7 +1435,7 @@ To what extent do capability dependencies generate persistent productive bottlen
 
 How do dependency-consistent initial conditions affect the evolution of seller-product networks?
 
-HOW IT WORKS
+# HOW IT WORKS
 
 VirtECom contains three classes of agents:
 
@@ -1418,8 +1464,7 @@ Technological proximity alone is insufficient for capability acquisition.
 
 Each capability may require one or more prerequisite capabilities. A capability becomes learnable only when:
 
-It belongs to the firm's technological frontier.
-All dependency requirements are satisfied.
+It belongs to the firm's technological frontier. All dependency requirements are satisfied.
 
 This mechanism introduces hierarchical knowledge structures into the model. Productive complexity is accumulated progressively through dependency chains rather than through independent capability acquisition.
 
@@ -1468,10 +1513,7 @@ As firms accumulate capabilities, new seller-product links may emerge.
 
 A seller-product link is formed whenever:
 
-Plain Text
-1
 RequiredCapabilities ⊆ SellerCapabilities
-Show more lines
 
 A seller-product link does not represent a transaction. It represents the ability of a seller to offer a product given its current capability portfolio.
 
@@ -1483,7 +1525,7 @@ KP1 = Mean diversification of sellers connected to a product.
 
 These indicators represent first-order reflections inspired by the Method of Reflections proposed by Hidalgo and Hausmann (2009).
 
-HOW TO USE IT
+# HOW TO USE IT
 
 During each tick:
 
@@ -1499,7 +1541,8 @@ Financially distressed sellers may exit the marketplace.
 Entrepreneurial entry may occur.
 Seller-product connections may expand as sellers accumulate capabilities.
 Network metrics are updated.
-THINGS TO NOTICE
+
+# THINGS TO NOTICE
 
 Pay attention to the following indicators.
 
@@ -1524,10 +1567,7 @@ KP1
 Average diversification of sellers associated with a product.
 
 Network Density
-Plain Text
-1
 count offers / (count sellers * count products)
-Show more lines
 
 Measures how dense the seller-product matrix is.
 
@@ -1539,16 +1579,12 @@ AI Sellers
 
 Number of sellers possessing:
 
-Plain Text
-1
 ai-recommendation
 Show more lines
 Cloud Computing
 
 Number of sellers possessing:
 
-Plain Text
-1
 cloud-computing
 Show more lines
 Technological Frontier
@@ -1585,7 +1621,7 @@ Observe whether advanced capabilities remain inaccessible despite appearing with
 
 Compare the diffusion rates of AI Recommendation and Cloud Computing against previous versions of the model.
 
-THINGS TO TRY
+# THINGS TO TRY
 
 Increase the number of sellers while keeping buyers and products constant.
 
@@ -1610,19 +1646,7 @@ Observe whether sophisticated capabilities generate bottlenecks.
 
 Compare:
 
-Plain Text
-1
-VirtECom 1.6
-Show more lines
-
-versus
-
-Plain Text
-1
-VirtECom 1.7
-Show more lines
-
-using identical parameter settings.
+VirtECom 1.6 versus VirtECom 1.7 using identical parameter settings in behavioral space.
 
 Measure differences in:
 
@@ -1632,43 +1656,46 @@ AI Sellers
 Cloud Computing
 Survival Rate
 Entrepreneurial Entry
-EXTENDING THE MODEL
+
+# EXTENDING THE MODEL
 
 Potential future extensions include:
 
-Multiple technological roots
-Endogenous capability creation
-Team-based capability accumulation
-Collective knowledge pools
-Knowledge spillovers
-Dynamic dependency structures
-Capability depreciation
-Endogenous demand generation
-Closed money-flow circuits
-Dynamic credit markets
-Consumer attention constraints
-Reputation systems
-Advanced Economic Complexity measures (ECI-like indicators)
-NETLOGO FEATURES
+- Multiple technological roots
+- Endogenous capability creation
+- Team-based capability accumulation
+- Collective knowledge pools
+- Knowledge spillovers
+- Dynamic dependency structures
+- Capability depreciation
+- Endogenous demand generation
+- Closed money-flow circuits
+- Dynamic credit markets
+- Consumer attention constraints
+- Reputation systems
+- Advanced Economic Complexity measures (ECI-like indicators)
+
+# NETLOGO FEATURES
 
 VirtECom 1.7 makes use of:
 
-Multiple agent breeds
-Bipartite seller-product networks
-Capability-based product eligibility
-Related learning
-Capability dependency structures
-Dependency-consistent initialization
-Buyer preference matching
-Dynamic network expansion
-BehaviorSpace-compatible experimentation
-Entrepreneurial entry
-Operating cost dynamics
-Cash accumulation and depletion
-Debt financing
-Risk-tolerance heterogeneity
-Firm exit mechanisms
-EXPERIMENTAL MOTIVATION OF THIS VERSION
+- Multiple agent breeds
+- Bipartite seller-product networks
+- Capability-based product eligibility
+- Related learning
+- Capability dependency structures
+- Dependency-consistent initialization
+- Buyer preference matching
+- Dynamic network expansion
+- BehaviorSpace-compatible experimentation
+- Entrepreneurial entry
+- Operating cost dynamics
+- Cash accumulation and depletion
+- Debt financing
+- Risk-tolerance heterogeneity
+- Firm exit mechanisms
+
+# EXPERIMENTAL MOTIVATION OF THIS VERSION
 
 VirtECom 1.7 was motivated by a limitation identified in VirtECom 1.6.
 
@@ -1680,7 +1707,10 @@ The central hypothesis is that productive complexity depends not only on technol
 
 Consequently, advanced capabilities may remain inaccessible even when they are technologically adjacent, generating bottlenecks in knowledge diffusion and potentially altering the long-run evolution of the seller-product network.
 
-RELATED MODELS
+# MAIN FINFINGS
+Capability dependencies generate path-dependent diffusion and delayed complexity emergence, but do not prevent long-run convergence toward highly diversified capability portfolios.
+
+# RELATED MODELS
 Economic Complexity Models
 
 VirtECom is conceptually inspired by the Economic Complexity framework of Hidalgo and Hausmann (2009), where productive capabilities shape diversification and economic structure.
@@ -1703,7 +1733,7 @@ VirtECom also relates to Agent-Based Models of digital marketplaces exploring bu
 
 Unlike most marketplace models, VirtECom explicitly incorporates productive capabilities, dependency structures, and Economic Complexity indicators.
 
-CREDITS AND REFERENCES
+# CREDITS AND REFERENCES
 
 Antonelli, C., & Ferraris, G. (2011). Innovation as an emerging system property: an agent based simulation model. Journal of Artificial Societies and Social Simulation, 14(2), 1.
 
