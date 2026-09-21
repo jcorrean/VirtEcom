@@ -1010,6 +1010,24 @@ to-report net-population-change
 
 end
 
+to-report ai-sellers
+
+  report count sellers
+         with
+         [member? "ai-recommendation"
+                  capability-set]
+
+end
+
+to-report cloud-sellers
+
+  report count sellers
+         with
+         [member? "cloud-computing"
+                  capability-set]
+
+end
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2674,6 +2692,60 @@ Pyka, A., & Fagiolo, G. (2007). Agent-Based Modelling: A Methodology for Neo-Sch
           <value value="50"></value>
           <value value="100"></value>
           <value value="250"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="Experiment_G_CapabilitiesDependencies" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <exitCondition><![CDATA[ticks >= 5000]]></exitCondition>
+      <metrics>
+        <metric>learning-cost</metric>
+        <metric>entry-threshold</metric>
+        <metric>buyer-income</metric>
+        <metric>operating-cost</metric>
+        <metric>count sellers</metric>
+        <metric>entrants</metric>
+        <metric>seller-population</metric>
+        <metric>net-population-change</metric>
+        <metric>exited-sellers</metric>
+        <metric>survival-rate</metric>
+        <metric>mean-cash</metric>
+        <metric>mean-debt</metric>
+        <metric>mean-buyer-budget</metric>
+        <metric>count offers</metric>
+        <metric>link-loss</metric>
+        <metric>mean-complexity</metric>
+        <metric>ai-sellers</metric>
+        <metric>cloud-sellers</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="operating-cost">
+          <value value="20"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="buyer-income">
+          <value value="50"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="entry-threshold">
+          <value value="5000"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="learning-cost">
+          <value value="50"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Sellers">
+          <value value="20"></value>
+          <value value="50"></value>
+          <value value="100"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Customers">
+          <value value="20"></value>
+          <value value="100"></value>
+          <value value="500"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Products">
+          <value value="10"></value>
+          <value value="25"></value>
+          <value value="50"></value>
         </enumeratedValueSet>
       </constants>
     </experiment>
