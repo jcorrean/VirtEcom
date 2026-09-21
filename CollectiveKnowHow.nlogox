@@ -27,6 +27,7 @@ firms-own [
 products-own [
 
   originating-firm
+  product-type
 
 ]
 
@@ -171,31 +172,228 @@ to create-customers-demo
 
 end
 
+to grow-coordination-network
+
+  ask firms
+  [
+
+    let firm-workers
+        workers with
+        [employer-id = [who] of myself]
+
+    let firm-links
+        coordinations with
+        [
+          [employer-id] of end1 = [who] of myself
+          and
+          [employer-id] of end2 = [who] of myself
+        ]
+
+    ;; =====================================
+    ;; FASE 1: NUCLEACIÓN
+    ;; =====================================
+
+    ifelse not any? firm-links
+    [
+
+      let w1 one-of firm-workers
+
+      let candidates
+          other firm-workers
+          with
+          [skill != [skill] of w1]
+
+      if any? candidates
+      [
+
+        let w2 one-of candidates
+
+        ask w1
+        [
+          create-coordination-with w2
+          [
+            set color black
+            set thickness 0.2
+          ]
+        ]
+
+      ]
+
+    ]
+
+    [
+
+      let connected-workers
+          (turtle-set
+             [end1] of firm-links
+             [end2] of firm-links)
+
+      let isolated-workers
+          firm-workers with
+          [not member? self connected-workers]
+
+      ;; =====================================
+      ;; FASE 2: EXPANSIÓN
+      ;; =====================================
+
+      ifelse any? isolated-workers
+      [
+
+        let newcomer
+            one-of isolated-workers
+
+        let anchor
+            one-of connected-workers
+
+        if [skill] of newcomer !=
+           [skill] of anchor
+        [
+
+          ask newcomer
+          [
+            create-coordination-with anchor
+            [
+              set color black
+              set thickness 0.2
+            ]
+          ]
+
+        ]
+
+      ]
+
+      [
+
+        ;; =====================================
+        ;; FASE 3: CIERRE TRIÁDICO
+        ;; =====================================
+
+        let eligible-workers
+            connected-workers
+            with [any? link-neighbors]
+
+        if any? eligible-workers
+        [
+
+          let w1 one-of eligible-workers
+
+          let first-neighbors
+              [link-neighbors] of w1
+
+          let second-neighbors
+              turtle-set
+              [link-neighbors] of first-neighbors
+
+          let candidates
+              second-neighbors
+              with
+              [
+                employer-id = [who] of myself
+                and
+                self != w1
+                and
+                not link-neighbor? w1
+              ]
+
+          if any? candidates
+          [
+
+            let w2 one-of candidates
+
+            if [skill] of w1 !=
+               [skill] of w2
+            [
+
+              ask w1
+              [
+                create-coordination-with w2
+                [
+                  set color black
+                  set thickness 0.2
+                ]
+              ]
+
+            ]
+
+          ]
+
+        ]
+
+      ]
+
+    ]
+
+  ]
+
+end
+
 to create-emergent-products
 
   ask firms
   [
 
-    if firm-has-diverse-triangle? self
-    [
+    let ck
+        collective-knowhow-score self
 
-      if not any? products with
-         [originating-firm = [who] of myself]
+    let available-skills
+        firm-skills self
+
+    foreach product-templates
+    [
+      template ->
+
+      let product-name
+          item 0 template
+
+      let required-skills
+          item 1 template
+
+      let required-ck
+          item 2 template
+
+      if ck >= required-ck
       [
 
-        hatch-products 1
+        if is-subset?
+           required-skills
+           available-skills
         [
 
-          set shape "box"
-          set color green
-          set size 2
+          if not any? products with
+             [
+               originating-firm =
+               [who] of myself
 
-          set originating-firm [who] of myself
+               and
 
-          set label "Collective Product"
+               product-type =
+               product-name
+             ]
+          [
 
-          move-to myself
-          fd 4
+            hatch-products 1
+            [
+
+              set shape "box"
+
+              set color green
+
+              set size 2
+
+              set label product-name
+
+              set product-type product-name
+
+              set originating-firm
+                  [who] of myself
+
+              move-to myself
+
+              fd 4
+
+            ]
+
+          ]
 
         ]
 
@@ -383,6 +581,7 @@ to update-firm-visualization
 end
 
 
+
 ;Setup
 
 to setup
@@ -397,19 +596,27 @@ to setup
   set product-templates
 [
   ["BasicCommerce"
-    ["marketing" "payments"]]
+   ["marketing" "payments"]
+   1]
 
   ["Marketplace"
-    ["marketing" "payments" "customer-service"]]
+   ["marketing"
+    "payments"
+    "customer-service"]
+   1]
 
   ["CloudService"
-    ["data-analytics" "cloud-computing"]]
+   ["data-analytics"
+    "cloud-computing"]
+   2]
 
   ["AIService"
-    ["data-analytics"
-     "cloud-computing"
-     "ai-recommendation"]]
+   ["data-analytics"
+    "cloud-computing"
+    "ai-recommendation"]
+   3]
 ]
+
 
   set skill-universe
   [
@@ -435,7 +642,7 @@ to setup
 
 create-workers-for-firms
 
-create-coordination-links
+;create-coordination-links
 
 
 create-customers-demo
@@ -449,8 +656,11 @@ end
 ; GO
 to go
 
-  create-emergent-products
+  grow-coordination-network
+
   update-firm-visualization
+
+  create-emergent-products
 
   tick
 
@@ -464,7 +674,7 @@ end]]></code>
          [firm-has-diverse-triangle? self]</monitor>
     <monitor x="10" precision="17" y="125" height="60" fontSize="11" width="100" display="Firms">count firms</monitor>
     <monitor x="10" precision="17" y="190" height="60" fontSize="11" width="100" display="Coordinations">count coordinations</monitor>
-    <monitor x="10" precision="17" y="255" height="60" fontSize="11" width="100" display="Triangulos en firmas">sum [triangles-in-firm self] of firms</monitor>
+    <monitor x="10" precision="17" y="255" height="60" fontSize="11" width="145" display="Triangulos en firmas">sum [triangles-in-firm self] of firms</monitor>
     <monitor x="115" precision="17" y="60" height="60" fontSize="11" width="155" display="Total Collec Know-How">sum
 [collective-knowhow-score self]
 of firms</monitor>
