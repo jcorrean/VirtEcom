@@ -24,9 +24,17 @@ firms-own [
 
 ]
 
+products-own [
+
+  originating-firm
+
+]
+
+
 globals [
 
   skill-universe
+  product-templates
 
 ]
 
@@ -105,18 +113,36 @@ to create-coordination-links
         workers with
         [employer-id = [who] of myself]
 
-    ask my-workers
+    ;; seleccionar tres workers
+
+    if count my-workers >= 3
     [
 
-      let partner
-          one-of other my-workers
+      let w1 item 0 sort my-workers
+      let w2 item 1 sort my-workers
+      let w3 item 2 sort my-workers
 
-      if partner != nobody
+      ask w1
       [
-        create-coordination-with partner
+        create-coordination-with w2
         [
           set color black
-          set thickness 0.2
+          set thickness 0.4
+        ]
+
+        create-coordination-with w3
+        [
+          set color black
+          set thickness 0.4
+        ]
+      ]
+
+      ask w2
+      [
+        create-coordination-with w3
+        [
+          set color black
+          set thickness 0.4
         ]
       ]
 
@@ -126,22 +152,7 @@ to create-coordination-links
 
 end
 
-to create-products-demo
 
-  create-products 10
-  [
-
-    set shape "box"
-
-    set color green
-
-    set size 2
-
-    setxy random-xcor random-ycor
-
-  ]
-
-end
 
 to create-customers-demo
 
@@ -160,6 +171,217 @@ to create-customers-demo
 
 end
 
+to create-emergent-products
+
+  ask firms
+  [
+
+    if firm-has-diverse-triangle? self
+    [
+
+      if not any? products with
+         [originating-firm = [who] of myself]
+      [
+
+        hatch-products 1
+        [
+
+          set shape "box"
+          set color green
+          set size 2
+
+          set originating-firm [who] of myself
+
+          set label "Collective Product"
+
+          move-to myself
+          fd 4
+
+        ]
+
+      ]
+
+    ]
+
+  ]
+
+end
+
+
+to-report is-subset? [small-set big-set]
+
+  report empty?
+         filter
+         [x -> not member? x big-set]
+         small-set
+
+end
+
+
+to-report firm-skills [firm-agent]
+
+  report remove-duplicates
+         [skill] of workers
+         with [employer-id = [who] of firm-agent]
+
+end
+
+to-report firm-has-diverse-triangle? [firm-agent]
+
+  let my-workers
+      workers with
+      [employer-id = [who] of firm-agent]
+
+  let worker-list sort my-workers
+
+  foreach worker-list
+  [
+    w1 ->
+
+    foreach worker-list
+    [
+      w2 ->
+
+      foreach worker-list
+      [
+        w3 ->
+
+        if (w1 != w2) and
+           (w1 != w3) and
+           (w2 != w3)
+        [
+
+          if ([link-neighbor? w2] of w1) and
+             ([link-neighbor? w3] of w1) and
+             ([link-neighbor? w3] of w2)
+          [
+
+            let skills
+                remove-duplicates
+                (list
+                  [skill] of w1
+                  [skill] of w2
+                  [skill] of w3)
+
+            if length skills = 3
+            [
+              report true
+            ]
+
+          ]
+        ]
+      ]
+    ]
+  ]
+
+  report false
+
+end
+
+to-report triangles-in-firm [firm-agent]
+
+  let my-workers
+      workers with
+      [employer-id = [who] of firm-agent]
+
+  let count-triangles 0
+
+  ask my-workers
+  [
+    let my-neighbors
+        link-neighbors with
+        [member? self my-workers]
+
+    if count my-neighbors >= 2
+    [
+      set count-triangles
+          count-triangles + 1
+    ]
+  ]
+
+  report count-triangles
+
+end
+
+
+to-report firms-with-triangles
+
+  report count firms
+         with
+         [firm-has-diverse-triangle? self]
+
+end
+
+to-report collective-knowhow-score [firm-agent]
+
+  let my-workers
+      workers with
+      [employer-id = [who] of firm-agent]
+
+  let score 0
+
+  let worker-list sort my-workers
+
+  foreach worker-list
+  [
+    w1 ->
+
+    foreach worker-list
+    [
+      w2 ->
+
+      foreach worker-list
+      [
+        w3 ->
+
+        if (w1 != w2) and
+           (w1 != w3) and
+           (w2 != w3)
+        [
+
+          if ([link-neighbor? w2] of w1) and
+             ([link-neighbor? w3] of w1) and
+             ([link-neighbor? w3] of w2)
+          [
+
+            let skills
+              remove-duplicates
+              (list
+                [skill] of w1
+                [skill] of w2
+                [skill] of w3)
+
+            if length skills = 3
+            [
+              set score score + 1
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+
+  report score / 6
+end
+
+to update-firm-visualization
+
+  ask firms
+  [
+
+    let ck
+        collective-knowhow-score self
+
+    set size 3 + ck
+
+    set label
+      word "CK="
+      precision ck 0
+
+  ]
+
+end
+
 
 ;Setup
 
@@ -172,6 +394,22 @@ to setup
   set pcolor white
 ]
 
+  set product-templates
+[
+  ["BasicCommerce"
+    ["marketing" "payments"]]
+
+  ["Marketplace"
+    ["marketing" "payments" "customer-service"]]
+
+  ["CloudService"
+    ["data-analytics" "cloud-computing"]]
+
+  ["AIService"
+    ["data-analytics"
+     "cloud-computing"
+     "ai-recommendation"]]
+]
 
   set skill-universe
   [
@@ -199,7 +437,6 @@ create-workers-for-firms
 
 create-coordination-links
 
-create-products-demo
 
 create-customers-demo
 
@@ -208,10 +445,32 @@ create-customers-demo
   reset-ticks
 
 end
-]]></code>
+
+; GO
+to go
+
+  create-emergent-products
+  update-firm-visualization
+
+  tick
+
+end]]></code>
   <widgets>
     <view x="368" wrappingAllowedX="true" y="10" frameRate="30.0" minPycor="-16" height="999" showTickCounter="true" patchSize="30.152" fontSize="10" wrappingAllowedY="true" width="999" tickCounterLabel="ticks" maxPycor="16" updateMode="0" maxPxcor="16" minPxcor="-16"></view>
     <button x="5" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
+    <button x="65" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">go</button>
+    <monitor x="10" precision="17" y="60" height="60" fontSize="11" width="100" display="Firms with triangles">count firms
+         with
+         [firm-has-diverse-triangle? self]</monitor>
+    <monitor x="10" precision="17" y="125" height="60" fontSize="11" width="100" display="Firms">count firms</monitor>
+    <monitor x="10" precision="17" y="190" height="60" fontSize="11" width="100" display="Coordinations">count coordinations</monitor>
+    <monitor x="10" precision="17" y="255" height="60" fontSize="11" width="100" display="Triangulos en firmas">sum [triangles-in-firm self] of firms</monitor>
+    <monitor x="115" precision="17" y="60" height="60" fontSize="11" width="155" display="Total Collec Know-How">sum
+[collective-knowhow-score self]
+of firms</monitor>
+    <monitor x="115" precision="17" y="125" height="60" fontSize="11" width="155" display="Mean Collec Know-How">mean
+[collective-knowhow-score self]
+of firms</monitor>
   </widgets>
   <info>## WHAT IS IT?
 
