@@ -654,6 +654,37 @@ to-report collective-knowhow-score [firm-agent]
   report score / 6
 end
 
+
+to adapt-workforce
+  ask firms [
+    ;; Evaluación por firma: si CK es alto y hay espacio en plantilla (< 12)
+    if (collective-knowhow-score self > 30) and (count workers with [employer-id = [who] of myself] < 12) [
+      hiring-process
+    ]
+  ]
+end
+
+to hiring-process ;; Se ejecuta dentro del contexto de la firma (turtle)
+  let my-firm self
+  let current-skills firm-skills my-firm
+  let missing-skills filter [s -> not member? s current-skills] skill-universe
+  
+  if not empty? missing-skills [
+    let needed-skill one-of missing-skills
+    
+    ;; Usamos 'hatch-workers' porque el agente ejecutor es una 'firm'
+    hatch-workers 1 [
+      set employer-id [who] of my-firm
+      set skill needed-skill
+      set shape "person"
+      set size 1
+      move-near-firm my-firm
+      color-by-skill
+    ]
+  ]
+end
+
+
 to update-firm-visualization
 
   ask firms
@@ -774,6 +805,8 @@ to go
   update-firm-visualization
 
   create-emergent-products
+  
+  adapt-workforce ;; 'adapt-workforce' ya se encarga de llamar a 'hiring-process'
 
   tick
 
