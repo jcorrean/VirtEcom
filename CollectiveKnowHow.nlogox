@@ -22,6 +22,7 @@ firms-own [
 
   firm-id
   capability-portfolio
+  capability-maturity
 
 ]
 
@@ -158,7 +159,7 @@ to build-capabilities
 
   ask firms
   [
-    set capability-portfolio[]
+    set capability-portfolio []
     
     let available-skills
         firm-skills self
@@ -411,6 +412,8 @@ end
 
 to create-emergent-products
 
+  let products-to-create []
+
   ask firms
   [
 
@@ -418,6 +421,9 @@ to create-emergent-products
 
     let available-capabilities
         capability-portfolio
+
+    let firm-x xcor
+    let firm-y ycor
 
     foreach product-templates
     [
@@ -442,25 +448,48 @@ to create-emergent-products
         ]
         [
 
-          hatch-products 1
-          [
-            set shape "box"
-            set color green
-            set size 2
-
-            set label product-name
-
-            set product-type product-name
-
-            set originating-firm current-firm-id
-
-            move-to myself
-            fd 4
-          ]
+          set products-to-create
+              lput
+              (list
+                current-firm-id
+                product-name
+                firm-x
+                firm-y)
+              products-to-create
 
         ]
 
       ]
+
+    ]
+
+  ]
+
+  foreach products-to-create
+  [
+    pdata ->
+
+    create-products 1
+    [
+
+      set shape "box"
+      set color green
+      set size 2
+
+      set originating-firm
+          item 0 pdata
+
+      set product-type
+          item 1 pdata
+
+      set label
+          item 1 pdata
+
+      setxy
+          item 2 pdata
+          item 3 pdata
+
+      fd 4
 
     ]
 
