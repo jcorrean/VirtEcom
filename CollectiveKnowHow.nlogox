@@ -21,6 +21,7 @@ workers-own [
 firms-own [
 
   firm-id
+  capability-portfolio
 
 ]
 
@@ -147,6 +148,87 @@ to create-coordination-links
         ]
       ]
 
+    ]
+
+  ]
+
+end
+
+to build-capabilities
+
+  ask firms
+  [
+    set capability-portfolio[]
+    
+    let available-skills
+        firm-skills self
+
+    let ck
+        collective-knowhow-score self
+
+    ;; Commercial Capability
+
+    if ck >= 1
+       and
+       is-subset?
+       ["marketing"
+        "payments"
+        "customer-service"]
+       available-skills
+    [
+
+       if not member?
+          "commercial-capability"
+          capability-portfolio
+       [
+          set capability-portfolio
+              lput
+              "commercial-capability"
+              capability-portfolio
+       ]
+    ]
+
+    ;; Digital Capability
+
+    if ck >= 2
+       and
+       is-subset?
+       ["data-analytics"
+        "cloud-computing"]
+       available-skills
+    [
+
+       if not member?
+          "digital-capability"
+          capability-portfolio
+       [
+          set capability-portfolio
+              lput
+              "digital-capability"
+              capability-portfolio
+       ]
+    ]
+
+    ;; AI Capability
+
+    if ck >= 3
+       and
+       is-subset?
+       ["data-analytics"
+        "cloud-computing"
+        "ai-recommendation"]
+       available-skills
+    [
+
+       if not member?
+          "ai-capability"
+          capability-portfolio
+       [
+          set capability-portfolio
+              lput
+              "ai-capability"
+              capability-portfolio
+       ]
     ]
 
   ]
@@ -332,11 +414,10 @@ to create-emergent-products
   ask firms
   [
 
-    let ck
-        collective-knowhow-score self
+    let current-firm-id who
 
-    let available-skills
-        firm-skills self
+    let available-capabilities
+        capability-portfolio
 
     foreach product-templates
     [
@@ -345,54 +426,36 @@ to create-emergent-products
       let product-name
           item 0 template
 
-      let required-skills
+      let required-capabilities
           item 1 template
 
-      let required-ck
-          item 2 template
-
-      if ck >= required-ck
+      if is-subset?
+         required-capabilities
+         available-capabilities
       [
 
-        if is-subset?
-           required-skills
-           available-skills
+        if not any? products with
+        [
+          originating-firm = current-firm-id
+          and
+          product-type = product-name
+        ]
         [
 
-          if not any? products with
-             [
-               originating-firm =
-               [who] of myself
-
-               and
-
-               product-type =
-               product-name
-             ]
+          hatch-products 1
           [
+            set shape "box"
+            set color green
+            set size 2
 
-            hatch-products 1
-            [
+            set label product-name
 
-              set shape "box"
+            set product-type product-name
 
-              set color green
+            set originating-firm current-firm-id
 
-              set size 2
-
-              set label product-name
-
-              set product-type product-name
-
-              set originating-firm
-                  [who] of myself
-
-              move-to myself
-
-              fd 4
-
-            ]
-
+            move-to myself
+            fd 4
           ]
 
         ]
@@ -580,6 +643,32 @@ to update-firm-visualization
 
 end
 
+to-report commercial-capability-firms
+
+  report count firms with
+         [member?
+          "commercial-capability"
+          capability-portfolio]
+
+end
+
+to-report digital-capability-firms
+
+  report count firms with
+         [member?
+          "digital-capability"
+          capability-portfolio]
+
+end
+
+to-report ai-capability-firms
+
+  report count firms with
+         [member?
+          "ai-capability"
+          capability-portfolio]
+
+end
 
 
 ;Setup
@@ -592,31 +681,22 @@ to setup
 [
   set pcolor white
 ]
+  
 
   set product-templates
 [
   ["BasicCommerce"
-   ["marketing" "payments"]
-   1]
+   ["commercial-capability"]]
 
   ["Marketplace"
-   ["marketing"
-    "payments"
-    "customer-service"]
-   1]
+   ["commercial-capability"]]
 
   ["CloudService"
-   ["data-analytics"
-    "cloud-computing"]
-   2]
+   ["digital-capability"]]
 
   ["AIService"
-   ["data-analytics"
-    "cloud-computing"
-    "ai-recommendation"]
-   3]
+   ["ai-capability"]]
 ]
-
 
   set skill-universe
   [
@@ -638,9 +718,11 @@ to setup
 
     set firm-id who
     set label word "F" who
+    set capability-portfolio []
   ]
 
 create-workers-for-firms
+  
 
 ;create-coordination-links
 
@@ -657,6 +739,8 @@ end
 to go
 
   grow-coordination-network
+
+  build-capabilities
 
   update-firm-visualization
 
