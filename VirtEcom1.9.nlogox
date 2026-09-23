@@ -583,14 +583,14 @@ end]]></code>
         <update>plot total-market-capital</update>
       </pen>
     </plot>
-    <plot x="10" autoPlotX="true" yMax="10.0" autoPlotY="true" y="560" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Total Exits / Entries">
+    <plot x="10" autoPlotX="true" yMax="10.0" autoPlotY="true" y="560" xMin="0.0" height="175" legend="true" xMax="10.0" yMin="0.0" width="230" display="Total Exits / Entries">
       <setup></setup>
       <update></update>
-      <pen interval="1.0" mode="0" display="default" color="-2674135" legend="true">
+      <pen interval="1.0" mode="0" display="Exits" color="-2674135" legend="true">
         <setup></setup>
         <update>plot total-exits</update>
       </pen>
-      <pen interval="1.0" mode="0" display="pen-1" color="-13791810" legend="true">
+      <pen interval="1.0" mode="0" display="Created" color="-13791810" legend="true">
         <setup></setup>
         <update>plot sellers-created</update>
       </pen>
