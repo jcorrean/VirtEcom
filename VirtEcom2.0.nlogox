@@ -88,10 +88,10 @@ to setup
   
   ;; Parámetros de Escasez y Restricción Cognitiva / Económica
   set max-triads-per-worker 3
-  set coordination-cost-factor 0.8  ;; Costo cuadrático: C_coord = factor * (CK^1.5)
-  set knowhow-decay-rate 0.05       ;; Los enlaces no usados se debilitan
+  set coordination-cost-factor 0.2  ;; Costo cuadrático: C_coord = factor * (CK^1.5)
+  set knowhow-decay-rate 0.01       ;; Los enlaces no usados se debilitan
   set market-price-sensitivity 0.08 ;; Sensibilidad Logit
-  set tax-rate 0.15                 ;; 15% de drenaje monetario periódico
+  set tax-rate 0.02                 ;; 2% de drenaje monetario periódico
   
   set skill-universe [
     "marketing" "payments" "customer-service"
