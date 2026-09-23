@@ -85,8 +85,8 @@ to setup
   set loan-size 500
   set debt-threshold 2000
   set entry-threshold 1000
-  set operating-cost-worker 0.2
-  set operating-cost-product 0.1
+  set operating-cost-worker 2
+  set operating-cost-product 1.5
   
   set skill-universe [
     "marketing"
