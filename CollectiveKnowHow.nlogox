@@ -251,7 +251,7 @@ to customer-shopping
     fd 0.5
     
     ;; Buscar productos cercanos en un radio de 3 parches
-    let nearby-products products in-radius 3
+    let nearby-products products in-radius 6
     
     if any? nearby-products [
       ;; Elige el producto de la firma con mayor CK score
@@ -281,10 +281,38 @@ to pay-operational-costs
     let my-products count products with [originating-firm = [who] of myself]
     
     ;; Costo operativo: $1 por trabajador + $0.5 por producto activo por tick
-    let payroll-cost my-workers * 1.0
-    let maintenance-cost my-products * 0.5
+    let payroll-cost my-workers * 0.2
+    let maintenance-cost my-products * 0.1
     
     set capital capital - (payroll-cost + maintenance-cost)
+  ]
+end
+
+to entry-of-new-firms
+  ;; Si quedan menos de 3 firmas, hay una probabilidad de que nazca una startup
+  if (count firms < 3) and (random-float 1.0 < 0.05) [
+    create-firms 1 [
+      set shape "circle"
+      set size 4
+      set color blue
+      setxy random-xcor random-ycor
+      set firm-id who
+      set label (word "F" who)
+      set capability-portfolio []
+      set capital 300
+      
+      let my-firm self
+      
+      ;; Usamos hatch-workers porque 'self' es una firm (turtle)
+      hatch-workers 8 [
+        set employer-id [who] of my-firm
+        set skill one-of skill-universe
+        set shape "person"
+        set size 1
+        move-near-firm my-firm
+        color-by-skill
+      ]
+    ]
   ]
 end
 
@@ -841,7 +869,7 @@ to setup
     set firm-id who
     set label word "F" who
     set capability-portfolio []
-    set capital 100
+    set capital 500
   ]
 
 create-workers-for-firms
@@ -872,6 +900,8 @@ to go
   create-emergent-products
   
   adapt-workforce
+  
+  entry-of-new-firms
 
   tick
 
