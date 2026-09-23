@@ -23,6 +23,7 @@ firms-own [
   firm-id
   capability-portfolio
   capability-maturity
+  capital
 
 ]
 
@@ -30,6 +31,7 @@ products-own [
 
   originating-firm
   product-type
+  price
 
 ]
 
@@ -234,6 +236,71 @@ to build-capabilities
 
   ]
 
+end
+
+to market-dynamics
+  customer-shopping
+  pay-operational-costs
+  check-bankruptcies
+end
+
+to customer-shopping
+  ask customers [
+    ;; Los clientes se mueven aleatoriamente buscando productos
+    rt random 40 - 20
+    fd 0.5
+    
+    ;; Buscar productos cercanos en un radio de 3 parches
+    let nearby-products products in-radius 3
+    
+    if any? nearby-products [
+      ;; Elige el producto de la firma con mayor CK score
+      let chosen-product max-one-of nearby-products [
+        collective-knowhow-score firm originating-firm
+      ]
+      
+      let vendor firm [originating-firm] of chosen-product
+      
+      if vendor != nobody [
+        ;; Transferencia de capital por venta
+        ask vendor [
+          set capital capital + [price] of chosen-product
+        ]
+        
+        ;; Efecto visual: el cliente salta brevemente a la posición del producto consumido
+        move-to chosen-product
+        setxy random-xcor random-ycor ;; El cliente reaparece en otro punto del mercado
+      ]
+    ]
+  ]
+end
+
+to pay-operational-costs
+  ask firms [
+    let my-workers count workers with [employer-id = [who] of myself]
+    let my-products count products with [originating-firm = [who] of myself]
+    
+    ;; Costo operativo: $1 por trabajador + $0.5 por producto activo por tick
+    let payroll-cost my-workers * 1.0
+    let maintenance-cost my-products * 0.5
+    
+    set capital capital - (payroll-cost + maintenance-cost)
+  ]
+end
+
+to check-bankruptcies
+  ask firms with [capital <= 0] [
+    let dead-firm-id who
+    
+    ;; Eliminar trabajadores de la firma en quiebra
+    ask workers with [employer-id = dead-firm-id] [ die ]
+    
+    ;; Eliminar productos de la firma en quiebra
+    ask products with [originating-firm = dead-firm-id] [ die ]
+    
+    ;; La firma desaparece
+    die
+  ]
 end
 
 
@@ -484,6 +551,8 @@ to create-emergent-products
 
       set label
           item 1 pdata
+      
+      set price 15
 
       setxy
           item 2 pdata
@@ -686,21 +755,14 @@ end
 
 
 to update-firm-visualization
-
   ask firms
   [
-
-    let ck
-        collective-knowhow-score self
-
-    set size 3 + ck
-
-    set label
-      word "CK="
-      precision ck 0
-
+    let ck collective-knowhow-score self
+    set size 3 + (ck / 10)  ;; Escalar tamaño
+    
+    ;; Sintaxis corregida: (word arg1 arg2 arg3 arg4 arg5 arg6)
+    set label (word "F" who " | CK=" (precision ck 0) " | $" (precision capital 0))
   ]
-
 end
 
 to-report commercial-capability-firms
@@ -779,6 +841,7 @@ to setup
     set firm-id who
     set label word "F" who
     set capability-portfolio []
+    set capital 100
   ]
 
 create-workers-for-firms
@@ -802,11 +865,13 @@ to go
 
   build-capabilities
 
+  market-dynamics ;; <--- NUEVO: Interacción de compra, costos y quiebras
+
   update-firm-visualization
 
   create-emergent-products
   
-  adapt-workforce ;; 'adapt-workforce' ya se encarga de llamar a 'hiring-process'
+  adapt-workforce
 
   tick
 
@@ -827,6 +892,7 @@ of firms</monitor>
     <monitor x="115" precision="17" y="190" height="60" fontSize="11" width="155" display="Firms with triangles">count firms
          with
          [firm-has-diverse-triangle? self]</monitor>
+    <button x="125" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">go</button>
   </widgets>
   <info>## WHAT IS IT?
 
