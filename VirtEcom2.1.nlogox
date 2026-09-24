@@ -606,42 +606,84 @@ end]]></code>
       </pen>
     </plot>
   </widgets>
-  <info>## WHAT IS IT?
+  <info><![CDATA[## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+VirtEcom 2.1 (Bounded Economic Complexity & Scarce Know-How Model) is an agent-based simulation that demonstrates the emergence of economic complexity and organizational know-how within a competitive digital market. The model explains how firms construct capability portfolios through internal coordination networks of workers subject to strict cognitive limits and non-linear administrative costs. 
+
+Unlike previous versions where collective know-how grew infinitely or the ecosystem collapsed into systemic extinction, Version 2.1 achieves a stable Schumpeterian regime characterized by creative destruction, continuous firm turnover, vertical product differentiation, and scarce economic complexity grounded in the principles of Hidalgo & Hausmann (2009).
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+The global behavior of the system emerges from the interaction among four agent breeds (firms, workers, products, customers) and two link breeds (coordinations, offers):
+
+* **Cognitive Constraints and Triadic Worker Networks:** Each worker possesses a specific skill (marketing, payments, customer-service, data-analytics, cloud-computing, ai-recommendation). Coordination among workers forms triads of complementary skills. To prevent unconstrained knowledge growth, each worker has finite cognitive capacity and can participate in a maximum of 3 active triads simultaneously (max-triads-per-worker = 3).
+* **Organic Know-How Decay:** Coordination links between workers degrade over time (knowhow-decay-rate = 0.01). If a firm fails to validate its products in the market through sales, its internal knowledge network disintegrates.
+* **Path-Dependent Capability Building:** Collective Know-How (CK) is calculated from active triads weighted by link strength. Firms unlock capabilities (commercial-capability, digital-capability, ai-capability) only when their CK exceeds specific complexity thresholds and they possess the required skill set.
+* **Product Competition and Logit Choice:** When a product is created, its quality (Q) is locked to the firm's current CK. Price is set based on required capabilities and quality. Consumers choose products via a probabilistic Logit choice utility function that weights relative quality against price sensitivity (market-price-sensitivity). Consumer budgets replenish periodically but incur a tax/leakage rate (tax-rate = 0.03) to prevent infinite market liquidity accumulation.
+* **Non-Linear Costs and Industrial Selection:** Firms pay payroll, catalog maintenance, and a non-linear administrative cost for managing internal complexity ($C_{coord} = \alpha \cdot CK^{1.1}$). If capital turns negative, firms rely on debt financing. If capital is <= 0 and debt exceeds the maximum threshold (1200), the firm goes bankrupt and its assets disappear. Entrepreneurial entry occurs via imitation of market leaders (Role Model Entry) or spontaneously when market density shrinks (count firms < 5), preventing absorbing extinction states.
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+### Control Buttons
+* **setup:** Resets the environment, clears metrics, and initializes the population of firms, workers, customers, and initial products.
+* **go:** Runs the simulation step-by-step continuously.
+
+### Sliders
+* **Number-of-Sellers:** Sets the initial number of selling firms upon setup (default: 5).
+* **Number-of-Customers:** Sets the number of customer agents in the market (default: 30).
+
+### Monitoring Plots
+* **Mean CK:** Displays the evolution of average Collective Know-How across active firms.
+* **Total Market Capital:** Plots the total aggregated capital accumulated by the business sector.
+* **Total Exits / Entries:** Quantitatively compares cumulative bankruptcy exits (Exits, red line) against new startup creations (Created, blue line).
+
+### World View
+* **Blue/Violet Circles (firms):** Represent firms. Their size scales dynamically with accumulated CK.
+* **Colored People Icons (workers):** Workforce units grouped around their employer firms, connected by black coordination links.
+* **Green Boxes (products):** Products offered in the market with labels indicating type and quality level Q.
+* **Red People Icons (customers):** Buyer agents moving around searching and consuming products.
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
+* **Stationary Mean CK Plateau:** Notice how the Mean CK plot stabilizes into a fluctuating plateau between 1.5 and 3.5 instead of exploding toward 70. This confirms that know-how has become a scarce, costly-to-coordinate resource.
+* **Parallel Entry and Exit Trajectories:** Observe how the Created and Exits curves in the industrial dynamics plot run parallel over thousands of ticks, demonstrating a steady-state flow of creative destruction without market collapse or permanent monopoly.
+* **Vertical Product Differentiation:** Inspect product labels in the view (Q: 3.1, Q: 4.5). High-CK firms launch higher-quality offerings that capture quality-sensitive consumers.
+* **Sparse Organizational Networks:** Look at the network topology around firms: worker networks form sparse, bounded structures rather than saturated complete graphs due to the 3-triad limit per worker.
 
 ## THINGS TO TRY
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+* **Adjusting Tax Leakage (tax-rate):** Change `set tax-rate 0.03` to `0.08` or `0.00` in the code tab to see how market liquidity influences bankruptcy rates and firm longevity.
+* **Varying Worker Cognitive Capacity:** Change `set max-triads-per-worker 3` to `1` or `5`. Check whether relaxing this bottleneck triggers runaway CK growth.
+* **Modifying Price Sensitivity (market-price-sensitivity):** Increase price sensitivity to observe if the market penalizes high-quality, high-price offerings in favor of low-cost alternatives.
+* **Testing Know-How Decay:** Increase `knowhow-decay-rate` to `0.03` to simulate rapid technological obsolescence where firms lose capabilities if sales halt.
 
 ## EXTENDING THE MODEL
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+* **Heterogeneous Demand Segmentation:** Classify customers into distinct segments (e.g., enterprise clients vs. retail consumers) with contrasting budgets and quality preferences.
+* **Labor Market & Talent Mobility:** Allow workers to resign or be headhunted by rival firms offering higher wages or better financial stability.
+* **Explicit R&D & Training Investments:** Introduce decision rules where firms re-invest a fraction of profits into worker training or acquiring missing skills from the universe.
+* **Exporting Network Metrics:** Export the bipartite firm-product matrix to Neo4j or R (igraph/tidygraph) to calculate Reflection Method metrics (KC1, KP1) externally.
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+* **Use of undirected-link-breed:** Separate management of social/cognitive worker links (coordinations) and commercial offer links between firms and products (offers).
+* **Efficient 3-Clique (Triad) Detection:** Custom algorithms inspecting worker triples to detect K3 patterns and evaluate cohesive collective knowledge.
+* **Logit Choice Implementation with max-one-of:** Stochastic purchasing selection evaluating continuous quality utility against budget constraints.
+* **Agent Hierarchy via hatch and Ownership:** Using hatching commands to anchor worker and product agents to parent firm entities using unique identifiers (employer-id, originating-firm).
 
 ## RELATED MODELS
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+* **Hidalgo & Hausmann Economic Complexity Models:** Bipartite country-product and product space network models.
+* **Nelson & Winter Evolutionary Economics Models:** Simulations of industrial dynamics, organizational routines, and market selection.
+* **Sugarscape with Money & Trade (Epstein & Axtell):** Agent-based models of wealth accumulation, consumption, and market cycles.
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
-</info>
+* Antonelli, C., & Ferraris, G. (2011). Innovation as an emerging system property: an agent based simulation model. *Journal of Artificial Societies and Social Simulation*, 14(2), 1.
+* Bruun, C. (2003). The Economy as an Agent-Based Whole: Simulating Schumpeterian Dynamics. *Industry and Innovation*, 10(4), 475-491.
+* Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570-10575.
+* Li, T., Wang, S., Zhou, D., & Razzaq, A. (2025). Consumer attention and market concentration in e-commerce: an agent-based perspective. *Journal of Economic Interaction and Coordination*, 20, 959-985.
+* Pyka, A., & Fagiolo, G. (2007). Agent-Based Modelling: A Methodology for Neo-Schumpeterian Economics. In Hanusch & Pyka (Eds.), *Elgar Companion to Neo-Schumpeterian Economics*. Edward Elgar Publishing.]]></info>
   <turtleShapes>
     <shape name="default" rotatable="true" editableColorIndex="0">
       <polygon color="-1920102913" filled="true" marked="true">
