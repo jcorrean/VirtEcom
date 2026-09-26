@@ -592,6 +592,14 @@ to-report gini-index-of-firm-capital
   ;; Fórmula estándar del Coeficiente de Gini
   let gini ((2 * temp-sum) / (n * sum-cap)) - ((n + 1) / n)
   report precision gini 3
+end
+
+to-report mean-firm-ck
+  ifelse any? firms [
+    report mean [ ck-score ] of firms
+  ] [
+    report 0
+  ]
 end]]></code>
   <widgets>
     <view x="270" wrappingAllowedX="true" y="0" frameRate="30.0" minPycor="-16" height="639" showTickCounter="true" patchSize="19.242424242424242" fontSize="10" wrappingAllowedY="true" width="639" tickCounterLabel="ticks" maxPycor="16" updateMode="0" maxPxcor="16" minPxcor="-16"></view>
@@ -1544,4 +1552,36 @@ The global behavior of the system emerges from the interaction among four agent 
     </shape>
   </linkShapes>
   <previewCommands>setup repeat 75 [ go ]</previewCommands>
+  <experiments>
+    <experiment name="Exp1_Cognitive_Constraint_Sensitivity" repetitions="10" sequentialRunOrder="true" runMetricsEveryStep="true" timeLimit="2000">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>max-triads-per-worker</metric>
+        <metric>mean-firm-ck</metric>
+        <metric>gini-index-of-firm-capital</metric>
+        <metric>count firms</metric>
+        <metric>count products</metric>
+        <metric>total-exits</metric>
+        <metric>sellers-created</metric>
+        <metric>sum [ max list 0 capital ] of firms</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="max-triads-per-worker">
+          <value value="1"></value>
+          <value value="2"></value>
+          <value value="3"></value>
+          <value value="5"></value>
+          <value value="8"></value>
+          <value value="999"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Sellers">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Customers">
+          <value value="30"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+  </experiments>
 </model>
