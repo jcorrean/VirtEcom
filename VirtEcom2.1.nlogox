@@ -63,7 +63,6 @@ globals [
   product-templates       
   
   ;; Parámetros de Esccasez y Restricción (v2.0)
-  max-triads-per-worker   ;; Límite estricto a la densificación de la red humana (3)
   coordination-cost-factor;; Factor multiplicador no lineal del costo de CK
   knowhow-decay-rate      ;; Tasa de degradación de enlaces inactivos
   market-price-sensitivity;; Sensibilidad al precio en la función de utilidad
@@ -87,7 +86,7 @@ to setup
   set sellers-created 0
   
   ;; Parámetros de Escasez y Restricción Cognitiva / Económica
-  set max-triads-per-worker 3
+  ;set max-triads-per-worker 3
   set coordination-cost-factor 0.2  ;; Costo cuadrático: C_coord = factor * (CK^1.5)
   set knowhow-decay-rate 0.01       ;; Los enlaces no usados se debilitan
   set market-price-sensitivity 0.05 ;; Sensibilidad Logit
@@ -639,6 +638,7 @@ end]]></code>
     <monitor x="1260" precision="0" y="185" height="60" fontSize="11" width="130" display="Active Product Diversity">count products</monitor>
     <monitor x="1155" precision="17" y="250" height="60" fontSize="11" width="100" display="Gini of Capital">gini-index-of-firm-capital</monitor>
     <button x="5" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
+    <slider x="10" step="1" y="195" max="10" width="250" display="max-triads-per-worker" height="50" min="1" direction="Horizontal" default="3.0" variable="max-triads-per-worker"></slider>
   </widgets>
   <info><![CDATA[## WHAT IS IT?
 
