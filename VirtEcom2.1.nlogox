@@ -607,6 +607,8 @@ end]]></code>
       </pen>
     </plot>
     <monitor x="1155" precision="17" y="185" height="60" fontSize="11" width="100" display="Firms">count firms</monitor>
+    <monitor x="1260" precision="17" y="185" height="60" fontSize="11" width="130" display="Active Product Diversity"><![CDATA[count products with [count offer-neighbors > 0]]]></monitor>
+    <monitor x="1155" precision="17" y="250" height="60" fontSize="11" width="100" display="Gini of Capital">gini-index-of-firm-capital</monitor>
   </widgets>
   <info><![CDATA[## WHAT IS IT?
 
