@@ -606,6 +606,7 @@ end]]></code>
         <update>plot sellers-created</update>
       </pen>
     </plot>
+    <monitor x="1155" precision="17" y="185" height="60" fontSize="11" width="100" display="Firms">count firms</monitor>
   </widgets>
   <info><![CDATA[## WHAT IS IT?
 
