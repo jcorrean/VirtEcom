@@ -570,12 +570,33 @@ end
 
 to-report total-market-capital
   report sum [capital] of firms
+end
+
+to-report gini-index-of-firm-capital
+  if not any? firms [ report 0 ]
+  let n count firms
+  if n <= 1 [ report 0 ]
+  
+  ;; Extraer y ordenar los valores de capital de menor a mayor
+  let cap-list sort [ max list 0 capital ] of firms
+  let sum-cap sum cap-list
+  if sum-cap = 0 [ report 0 ]
+  
+  let temp-sum 0
+  let i 1
+  foreach cap-list [ c ->
+    set temp-sum temp-sum + (i * c)
+    set i i + 1
+  ]
+  
+  ;; Fórmula estándar del Coeficiente de Gini
+  let gini ((2 * temp-sum) / (n * sum-cap)) - ((n + 1) / n)
+  report precision gini 3
 end]]></code>
   <widgets>
     <view x="270" wrappingAllowedX="true" y="0" frameRate="30.0" minPycor="-16" height="639" showTickCounter="true" patchSize="19.242424242424242" fontSize="10" wrappingAllowedY="true" width="639" tickCounterLabel="ticks" maxPycor="16" updateMode="0" maxPxcor="16" minPxcor="-16"></view>
     <slider x="10" step="1" y="85" max="20" width="250" display="Number-of-Sellers" height="50" min="1" direction="Horizontal" default="5.0" variable="Number-of-Sellers"></slider>
     <slider x="10" step="5" y="140" max="100" width="250" display="Number-of-Customers" height="50" min="10" direction="Horizontal" default="30.0" variable="Number-of-Customers"></slider>
-    <button x="5" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
     <button x="65" y="10" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55">go</button>
     <button x="125" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">go</button>
     <plot x="920" autoPlotX="true" yMax="10.0" autoPlotY="true" y="5" xMin="0.0" height="175" legend="false" xMax="10.0" yMin="0.0" width="230" display="Mean CK">
@@ -607,8 +628,9 @@ end]]></code>
       </pen>
     </plot>
     <monitor x="1155" precision="17" y="185" height="60" fontSize="11" width="100" display="Firms">count firms</monitor>
-    <monitor x="1260" precision="17" y="185" height="60" fontSize="11" width="130" display="Active Product Diversity"><![CDATA[count products with [count offer-neighbors > 0]]]></monitor>
+    <monitor x="1260" precision="0" y="185" height="60" fontSize="11" width="130" display="Active Product Diversity">count products</monitor>
     <monitor x="1155" precision="17" y="250" height="60" fontSize="11" width="100" display="Gini of Capital">gini-index-of-firm-capital</monitor>
+    <button x="5" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
   </widgets>
   <info><![CDATA[## WHAT IS IT?
 
