@@ -105,7 +105,7 @@ to setup
   ]
   
   create-firms Number-of-Sellers [
-    set shape "circle"
+    set shape "square 2"
     set size 4
     set color blue
     setxy random-xcor random-ycor
@@ -472,7 +472,7 @@ to entrepreneurial-entry
       ]
       
       create-firms 1 [
-        set shape "circle"
+        set shape "square2"
         set size 4
         set color violet
         setxy random-xcor random-ycor
