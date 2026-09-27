@@ -63,7 +63,6 @@ globals [
   product-templates       
   
   ;; Parámetros de Escasez, Crédito e Instituciones (Schumpeter-Bruun)
-  credit-limit-base       ;; Límite de sobregiro otorgado por el sistema bancario
   coordination-cost-factor;; Factor multiplicador no lineal del costo de CK
   knowhow-decay-rate      ;; Tasa de degradación de enlaces inactivos
   market-price-sensitivity;; Sensibilidad al precio en la función Logit
@@ -87,7 +86,6 @@ to setup
   set sellers-created 0
   
   ;; Parámetros del Sistema
-  set max-triads-per-worker 3
   set credit-limit-base 800         ;; Capacidad de financiamiento de la curva de aprendizaje
   set coordination-cost-factor 0.2  ;; C_coord = factor * (CK^1.1)
   set knowhow-decay-rate 0.01       
@@ -582,6 +580,14 @@ to-report gini-index-of-firm-capital
   report precision gini 3
 end
 
+to-report mean-net-capital
+  ifelse any? firms [
+    report mean [ capital - debt ] of firms
+  ] [
+    report 0
+  ]
+end
+
 to-report mean-firm-ck
   ifelse any? firms [
     report mean [ ck-score ] of firms
@@ -628,6 +634,7 @@ end]]></code>
     <monitor x="1155" precision="17" y="250" height="60" fontSize="11" width="100" display="Gini of Capital">gini-index-of-firm-capital</monitor>
     <button x="5" y="10" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55">setup</button>
     <slider x="10" step="1" y="195" max="10" width="250" display="max-triads-per-worker" height="50" min="1" direction="Horizontal" default="3.0" variable="max-triads-per-worker"></slider>
+    <slider x="10" step="100" y="250" max="3000" width="250" display="credit-limit-base" height="50" min="200" direction="Horizontal" default="800.0" variable="credit-limit-base"></slider>
   </widgets>
   <info><![CDATA[## WHAT IS IT?
 
@@ -1563,6 +1570,47 @@ The global behavior of the system emerges from the interaction among four agent 
           <value value="5"></value>
           <value value="8"></value>
           <value value="999"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Sellers">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="Number-of-Customers">
+          <value value="30"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="Exp2_Credit_vs_Cognitive_Constraint" repetitions="20" sequentialRunOrder="true" runMetricsEveryStep="true" timeLimit="2000">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>ticks</metric>
+        <metric>max-triads-per-worker</metric>
+        <metric>credit-limit-base</metric>
+        <metric>mean-firm-ck</metric>
+        <metric>gini-index-of-firm-capital</metric>
+        <metric>count firms</metric>
+        <metric>count products</metric>
+        <metric>total-exits</metric>
+        <metric>sellers-created</metric>
+        <metric>total-market-capital</metric>
+        <metric>sum [ debt ] of firms</metric>
+        <metric>mean-net-capital</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="max-triads-per-worker">
+          <value value="1"></value>
+          <value value="2"></value>
+          <value value="3"></value>
+          <value value="5"></value>
+          <value value="8"></value>
+          <value value="999"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="credit-limit-base">
+          <value value="200"></value>
+          <value value="500"></value>
+          <value value="800"></value>
+          <value value="1500"></value>
+          <value value="3000"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="Number-of-Sellers">
           <value value="5"></value>
