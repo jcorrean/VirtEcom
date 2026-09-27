@@ -472,7 +472,7 @@ to entrepreneurial-entry
       ]
       
       create-firms 1 [
-        set shape "square2"
+        set shape "square 2"
         set size 4
         set color violet
         setxy random-xcor random-ycor
