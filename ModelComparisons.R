@@ -382,3 +382,11 @@ ggplot(filter(exp1_clean, step == 2000), aes(x = max_triads_label, y = mean_ck, 
   ) +
   theme_minimal() +
   guides(fill = "none")
+
+# Exp2: Credit vs Cognitive Constraint ------------------------------------
+
+Exp2 <-
+  read_behaviorspace_spreadsheet(
+    "Experiments/VirtEcom3 Exp2_Credit_vs_Cognitive_Constraint-spreadsheet.csv"
+  )
+
