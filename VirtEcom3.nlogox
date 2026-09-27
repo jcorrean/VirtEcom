@@ -86,7 +86,7 @@ to setup
   set sellers-created 0
   
   ;; Parámetros del Sistema
-  set credit-limit-base 800         ;; Capacidad de financiamiento de la curva de aprendizaje
+  ;;set credit-limit-base 800         ;; Capacidad de financiamiento de la curva de aprendizaje
   set coordination-cost-factor 0.2  ;; C_coord = factor * (CK^1.1)
   set knowhow-decay-rate 0.01       
   set market-price-sensitivity 0.05 
