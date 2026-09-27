@@ -421,22 +421,20 @@ model_debt <- lm(`sum [ debt ] of firms` ~ `max-triads-per-worker` * `credit-lim
 summary(model_debt)
 
 # Muestreo temporal cada 50 ticks para aligerar la gráfica
-exp2_ts <- Exp2 %>% 
-  filter(`[step]` %% 50 == 0) %>% 
-  group_by(`[step]`, `max-triads-per-worker`, `credit-limit-base`) %>% 
-  summarise(
-    mean_ck = mean(`mean-firm-ck`, na.rm = TRUE),
-    mean_firms = mean(`count firms`, na.rm = TRUE),
-    .groups = "drop"
-  )
+exp2_summary <- exp2_final %>%
+  group_by(`max-triads-per-worker`, `credit-limit-base`) %>%
+  summarise(mean_net_cap = mean(`mean-net-capital`, na.rm = TRUE), .groups = "drop")
 
-ggplot(exp2_ts, aes(x = `[step]`, y = mean_ck, color = factor(`max-triads-per-worker`))) +
-  geom_line(size = 1) +
-  facet_wrap(~ `credit-limit-base`, labeller = label_both) +
-  scale_color_viridis_d(name = "Triads/Worker") +
+ggplot(exp2_summary, aes(
+  x = factor(`max-triads-per-worker`), 
+  y = factor(`credit-limit-base`), 
+  fill = mean_net_cap
+)) +
+  geom_tile(color = "white", size = 0.5) +
+  scale_fill_viridis_c(option = "magma", name = "Capital Neto Promedio") +
   labs(
-    title = "Evolución del Know-How Promedio por Régimen de Crédito",
-    x = "Ticks",
-    y = "Mean Firm CK"
+    title = "Interacción Crédito vs. Límite Cognitivo sobre la Capitalización",
+    x = "Límite Cognitivo por Trabajador (max-triads-per-worker)",
+    y = "Límite de Crédito Base (credit-limit-base)"
   ) +
-  theme_bw()
+  theme_minimal()
