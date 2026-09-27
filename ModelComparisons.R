@@ -390,3 +390,53 @@ Exp2 <-
     "Experiments/VirtEcom3 Exp2_Credit_vs_Cognitive_Constraint-spreadsheet.csv"
   )
 
+library(viridis)
+
+# Filtrar solo el estado final (tick 2000)
+exp2_final <- Exp2 %>% 
+  filter(`[step]` == 2000) %>% 
+  mutate(
+    max_triads = factor(`max-triads-per-worker`),
+    credit_limit = factor(`credit-limit-base`)
+  )
+
+# Heatmap de Salud Financiera Promedio (mean-net-capital)
+ggplot(exp2_final, aes(x = max_triads, y = credit_limit, fill = `mean-net-capital`)) +
+  geom_tile(color = "white") +
+  stat_summary(fun = mean, geom = "tile", aes(fill = `mean-net-capital`)) +
+  scale_fill_viridis_c(option = "magma", name = "Capital Neto") +
+  labs(
+    title = "Interacción Crédito vs. Límite Cognitivo sobre la Capitalización",
+    x = "Límite Cognitivo por Trabajador (max-triads-per-worker)",
+    y = "Límite de Crédito Base (credit-limit-base)"
+  ) +
+  theme_minimal()
+
+# Modelo Lineal Generalizado con Interacción Factorial
+model_ck <- lm(`mean-firm-ck` ~ `max-triads-per-worker` * `credit-limit-base`, data = exp2_final)
+summary(model_ck)
+
+# Evaluar el apalancamiento y deuda global
+model_debt <- lm(`sum [ debt ] of firms` ~ `max-triads-per-worker` * `credit-limit-base`, data = exp2_final)
+summary(model_debt)
+
+# Muestreo temporal cada 50 ticks para aligerar la gráfica
+exp2_ts <- Exp2 %>% 
+  filter(`[step]` %% 50 == 0) %>% 
+  group_by(`[step]`, `max-triads-per-worker`, `credit-limit-base`) %>% 
+  summarise(
+    mean_ck = mean(`mean-firm-ck`, na.rm = TRUE),
+    mean_firms = mean(`count firms`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(exp2_ts, aes(x = `[step]`, y = mean_ck, color = factor(`max-triads-per-worker`))) +
+  geom_line(size = 1) +
+  facet_wrap(~ `credit-limit-base`, labeller = label_both) +
+  scale_color_viridis_d(name = "Triads/Worker") +
+  labs(
+    title = "Evolución del Know-How Promedio por Régimen de Crédito",
+    x = "Ticks",
+    y = "Mean Firm CK"
+  ) +
+  theme_bw()
