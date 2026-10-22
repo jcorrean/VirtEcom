@@ -170,4 +170,63 @@ modelo_mixto <- lmer(
 # 3. Resumen estadístico con p-values exactos
 summary(modelo_mixto)
 
+library(modelsummary)
 
+# 1. Definir nombres limpios para las variables
+coef_names <- c(
+ "(Intercept)" = "Intercepto",
+ "max.triads.per.worker" = "Max. Triadas por Trabajador",
+ "credit.limit.base" = "Límite de Crédito Base",
+ "max.triads.per.worker:credit.limit.base" = "Max. Triadas × Crédito Base"
+)
+
+# 2. Generar el código LaTeX compatible con la plantilla estándar de JASSS
+modelsummary(
+ modelo_mixto,
+ output = "latex",
+ coef_map = coef_names,
+ stars = TRUE,
+ gof_omit = "AIC|BIC|ICC|RMSE", # Omitir métricas secundarias si deseas una tabla limpia
+ escape = FALSE
+)
+
+
+library(lme4)
+library(lmerTest)
+library(MuMIn) # Para r.squaredGLMM()
+variable.names(df_clean)
+
+library(lme4)
+library(lmerTest)
+
+# Opción A: Usando comillas invertidas (backticks)
+modelo_ck <- lmer(
+ `mean-firm-ck` ~ max.triads.per.worker * credit.limit.base + (1 | run),
+ data = df_clean
+)
+
+modelo_capital <- lmer(
+ `mean-net-capital` ~ max.triads.per.worker * credit.limit.base + (1 | run),
+ data = df_clean
+)
+
+modelo_gini <- lmer(
+ `gini-index-of-firm-capital` ~ max.triads.per.worker * credit.limit.base + (1 | run),
+ data = df_clean
+)
+
+modelo_exits <- lmer(
+ `total-exits` ~ max.triads.per.worker * credit.limit.base + (1 | run),
+ data = df_clean
+)
+
+summary(modelo_ck)
+summary(modelo_capital)
+summary(modelo_gini)
+summary(modelo_exits)
+
+
+library(sjPlot)
+# Gráfico de coeficientes combinados (Forest Plot)
+plot_models(modelo_mixto, modelo_ck, modelo_capital, modelo_gini, modelo_exits,
+            m.labels = c("Debt", "CK", "Net Capital", "Gini", "Exits"))
