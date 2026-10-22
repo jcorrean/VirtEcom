@@ -170,3 +170,4 @@ modelo_mixto <- lmer(
 # 3. Resumen estadístico con p-values exactos
 summary(modelo_mixto)
 
+
