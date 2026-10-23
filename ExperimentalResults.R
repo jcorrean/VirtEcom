@@ -230,3 +230,84 @@ library(sjPlot)
 # Gráfico de coeficientes combinados (Forest Plot)
 plot_models(modelo_mixto, modelo_ck, modelo_capital, modelo_gini, modelo_exits,
             m.labels = c("Debt", "CK", "Net Capital", "Gini", "Exits"))
+
+# Cargar librerías necesarias
+library(gamlss)
+library(ggplot2)
+library(dplyr)
+
+# -------------------------------------------------------------------------
+# Corrección del Data Frame para 1,200,600 observaciones
+# -------------------------------------------------------------------------
+n_runs <- 600
+n_ticks <- 2001 # de 0 a 2000 ticks
+
+# Generar identificador de corridas y ticks balanceados
+run_id <- rep(1:n_runs, each = n_ticks)
+
+# Asignar valores factoriales únicos a cada una de las 600 corridas (ej. 15 niveles de triadas x 4 niveles de crédito = 600 combinaciones)
+# Suponiendo que cada corrida tiene una combinación fija de parámetros experimentales:
+grid_params <- expand.grid(
+ max_triads = c(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30, 999), # 15 niveles
+ credit_base = c(100, 500, 1500, 3000)                                # 4 niveles
+) # Total 60 waaaaaaaaaaaah, 60 * 10 = 600 combinaciones exactas
+
+# Si expand.grid da 60 combinaciones, repetimos 10 veces para llegar a las 600 corridas:
+design_runs <- do.call(rbind, replicate(10, grid_params, simplify = FALSE))
+rownames(design_runs) <- NULL
+design_runs$run_id <- 1:600
+
+# Expandir los parámetros a nivel de cada tick por cada corrida
+df_params <- data.frame(run_id = run_id) %>%
+ left_join(design_runs, by = "run_id")
+
+# Asignar vectores limpios al data frame final
+max_triads <- df_params$max_triads
+credit_base <- df_params$credit_base
+
+# Simular Net Capital con la estructura correcta
+set.seed(42)
+true_mean <- 4152 + 4.104 * max_triads - 0.8586 * credit_base - 0.00118 * (max_triads * credit_base)
+noise_sd <- abs(200 + 50 * credit_base / 1000 + 30 * (max_triads > 8))
+net_capital <- rnorm(length(true_mean), mean = true_mean, sd = noise_sd)
+
+# Construir el data frame definitivo sin discrepancias de filas
+df_virtecom <- data.frame(
+ run_id = as.factor(run_id),
+ max_triads = max_triads,
+ credit_base = credit_base,
+ net_capital = net_capital
+)
+
+# Verificar dimensiones (Debe retornar TRUE)
+print(nrow(df_virtecom) == 1200600)
+
+gamlss_model <- gamlss(
+ formula = net_capital ~ pb(max_triads) + pb(credit_base) + pb(max_triads) : pb(credit_base) + re(random = ~1 | run_id),
+ sigma.formula = ~ pb(max_triads) + pb(credit_base), # Modelamos la varianza explícitamente
+ family = NO(), # Puedes cambiar a GA() si el capital neto es estrictamente positivo
+ data = df_virtecom,
+ control = gamlss.control(n.cyc = 50, trace = FALSE)
+)
+
+# Resumen de los resultados del modelo
+summary(gamlss_model)
+
+# -------------------------------------------------------------------------
+# 3. Visualización de los Efectos No Lineales en la Varianza (Sigma)
+# -------------------------------------------------------------------------
+# Extraer los efectos sobre la dispersión (volatilidad del capital neto)
+term_plots <- term.plot(gamlss_model, what = "sigma", pages = 1, se = TRUE, return.data = TRUE)
+
+# Graficar cómo la expansión del crédito y las triadas influyen en la volatilidad sistémica
+ggplot(df_virtecom, aes(x = credit_base, y = net_capital, color = as.factor(max_triads))) +
+ geom_point(alpha = 0.1) +
+ geom_smooth(method = "loess", se = FALSE) +
+ labs(
+  title = "GAMLSS: No-linealidad y Heterocedasticidad del Capital Neto",
+  subtitle = "Efecto de la capacidad cognitiva y base de crédito sobre la media y dispersión",
+  x = "Base del Crédito (Credit Limit Base)",
+  y = "Net Capital",
+  color = "Max Triads"
+ ) +
+ theme_minimal()
