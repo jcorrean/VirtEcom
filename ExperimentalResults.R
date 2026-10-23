@@ -283,11 +283,11 @@ df_virtecom <- data.frame(
 print(nrow(df_virtecom) == 1200600)
 
 gamlss_model <- gamlss(
- formula = net_capital ~ pb(max_triads) + pb(credit_base) + pb(max_triads) : pb(credit_base) + re(random = ~1 | run_id),
- sigma.formula = ~ pb(max_triads) + pb(credit_base), # Modelamos la varianza explícitamente
- family = NO(), # Puedes cambiar a GA() si el capital neto es estrictamente positivo
+ formula = net_capital ~ pb(max_triads) + pb(credit_base) + pb(max_triads):pb(credit_base),
+ sigma.formula = ~ pb(max_triads) + pb(credit_base),
+ family = NO(),
  data = df_virtecom,
- control = gamlss.control(n.cyc = 50, trace = FALSE)
+ control = gamlss.control(n.cyc = 100, trace = TRUE)
 )
 
 # Resumen de los resultados del modelo
@@ -300,13 +300,13 @@ summary(gamlss_model)
 term_plots <- term.plot(gamlss_model, what = "sigma", pages = 1, se = TRUE, return.data = TRUE)
 
 # Graficar cómo la expansión del crédito y las triadas influyen en la volatilidad sistémica
-ggplot(df_virtecom, aes(x = credit_base, y = net_capital, color = as.factor(max_triads))) +
+F1 <- ggplot(df_virtecom, aes(x = credit_base, y = net_capital, color = as.factor(max_triads))) +
  geom_point(alpha = 0.1) +
  geom_smooth(method = "loess", se = FALSE) +
  labs(
-  title = "GAMLSS: No-linealidad y Heterocedasticidad del Capital Neto",
-  subtitle = "Efecto de la capacidad cognitiva y base de crédito sobre la media y dispersión",
-  x = "Base del Crédito (Credit Limit Base)",
+  title = "GAMLSS: Non-Linearity and Heteroscedasticity of Net Capital",
+  subtitle = "Joint Effect of Cognitive Capacity and Credit Base on Location and Dispersion",
+  x = "Base Credit Limit (Credit Limit Base)",
   y = "Net Capital",
   color = "Max Triads"
  ) +
