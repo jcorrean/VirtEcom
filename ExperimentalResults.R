@@ -1,4 +1,3 @@
-# 1. Cargar librerías
 library(tidyverse)
 read_behaviorspace_spreadsheet <- function(file) {
  
@@ -126,8 +125,6 @@ read_behaviorspace_spreadsheet <- function(file) {
  
 }
 
-# 2. Leer el CSV exportado por NetLogo BehaviorSpace 
-# (omite las primeras 6 filas de encabezado de NetLogo)
 
 df <-
  read_behaviorspace_spreadsheet(
@@ -231,7 +228,12 @@ library(sjPlot)
 plot_models(modelo_mixto, modelo_ck, modelo_capital, modelo_gini, modelo_exits,
             m.labels = c("Debt", "CK", "Net Capital", "Gini", "Exits"))
 
-# Cargar librerías necesarias
+
+
+
+
+
+# A PARTIR DE ACÁ SON RESULTADOS SIMULADOS FUERA DE NETLOGO
 library(gamlss)
 library(ggplot2)
 library(dplyr)
