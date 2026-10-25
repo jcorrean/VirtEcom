@@ -228,7 +228,27 @@ library(sjPlot)
 plot_models(modelo_mixto, modelo_ck, modelo_capital, modelo_gini, modelo_exits,
             m.labels = c("Debt", "CK", "Net Capital", "Gini", "Exits"))
 
+library(gamlss)
 
+# Asegurar que el data frame limpio tenga las variables numéricas correctas
+df_clean <- df_clean %>%
+  mutate(
+    `mean-net-capital` = as.numeric(`mean-net-capital`),
+    max.triads.per.worker = as.numeric(max.triads.per.worker),
+    credit.limit.base = as.numeric(credit.limit.base)
+  )
+
+# Estimación del modelo GAMLSS con los datos reales de NetLogo
+gamlss_model_real <- gamlss(
+  formula = `mean-net-capital` ~ pb(max.triads.per.worker) + pb(credit.limit.base) + pb(max.triads.per.worker):pb(credit.limit.base),
+  sigma.formula = ~ pb(max.triads.per.worker) + pb(credit.limit.base),
+  family = NO(),
+  data = df_clean,
+  control = gamlss.control(n.cyc = 100, trace = TRUE)
+)
+
+# Resumen de los resultados empíricos
+summary(gamlss_model_real)
 
 
 
