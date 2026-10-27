@@ -229,8 +229,52 @@ plot_models(modelo_mixto, modelo_ck, modelo_capital, modelo_gini, modelo_exits,
             m.labels = c("Debt", "CK", "Net Capital", "Gini", "Exits"))
 
 
+library(gamlss)
+gamlss_model_real <- gamlss(
+ formula = `mean-net-capital` ~ pb(max.triads.per.worker) + pb(credit.limit.base) + pb(max.triads.per.worker):pb(credit.limit.base),
+ sigma.formula = ~ pb(max.triads.per.worker) + pb(credit.limit.base),
+ family = NO(),
+ data = df_clean,
+ control = gamlss.control(n.cyc = 150, c.crit = 0.001, trace = TRUE)
+)
 
+summary(gamlss_model_real)
 
+library(gamlss)
+library(ggplot2)
+library(dplyr)
+
+# 1. Extraer los términos de sigma (dispersión/volatilidad) del modelo real ajustado
+term_plots_sigma <- term.plot(
+ gamlss_model_real, 
+ what = "sigma", 
+ pages = 1, 
+ se = TRUE, 
+ return.data = TRUE
+)
+
+# 2. Generar la Figura con ggplot2 utilizando el dataframe real de NetLogo
+F1 <- ggplot(df_clean, aes(x = credit.limit.base, 
+                           y = `mean-net-capital`, 
+                           color = as.factor(max.triads.per.worker))) +
+ geom_point(alpha = 0.1) +
+ geom_smooth(method = "loess", se = FALSE) +
+ labs(
+  title = "GAMLSS: Non-Linearity and Heteroscedasticity of Net Capital",
+  subtitle = "Joint Effect of Cognitive Capacity and Credit Base on Location and Dispersion",
+  x = "Base Credit Limit (Credit Limit Base)",
+  y = "Net Capital",
+  color = "Max Triads"
+ ) +
+ theme_minimal(base_size = 12) +
+ theme(
+  legend.position = "right",
+  panel.grid.minor = element_blank(),
+  plot.title = element_text(face = "bold", hjust = 0.5)
+ )
+
+# Mostrar la figura generada
+print(F1)
 
 
 # A PARTIR DE ACÁ SON RESULTADOS SIMULADOS FUERA DE NETLOGO
