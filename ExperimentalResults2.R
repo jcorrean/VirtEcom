@@ -296,3 +296,14 @@ modelo_cond <- gamlss(
 
 # Diagnóstico de residuos mediante Worm-plot para los supervivientes
 wp(modelo_cond)
+
+metrics_summary <- data.frame(
+ Model_Component = c("Survival (Binomial)", "Conditional (SHASH)"),
+ N_Observations  = c(nobs(modelo_bin), nobs(modelo_cond)),
+ Effective_DF    = c(df.fit(modelo_bin), df.fit(modelo_cond)),
+ Global_Deviance = c(AIC(modelo_bin, k=0), AIC(modelo_cond, k=0)), # Aproximación de devianza
+ AIC             = c(AIC(modelo_bin), AIC(modelo_cond)),
+ BIC             = c(BIC(modelo_bin), BIC(modelo_cond))
+)
+
+print(metrics_summary)
