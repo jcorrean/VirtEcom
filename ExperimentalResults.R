@@ -228,7 +228,41 @@ library(sjPlot)
 plot_models(modelo_mixto, modelo_ck, modelo_capital, modelo_gini, modelo_exits,
             m.labels = c("Debt", "CK", "Net Capital", "Gini", "Exits"))
 
+library(sjPlot)
 
+# Gráfico de coeficientes con facetas separadas para que cada modelo tenga su propia escala
+plot_models(
+ modelo_ck, modelo_capital, modelo_gini, modelo_exits,
+ m.labels = c("CK", "Net Capital", "Gini", "Exits"),
+ grid = TRUE,
+ show.legend = FALSE
+)
+
+df_scaled <- df_clean %>%
+ mutate(
+  across(c(`mean-firm-ck`, `mean-net-capital`, `gini-index-of-firm-capital`, `total-exits`, 
+           max.triads.per.worker, credit.limit.base), 
+         ~ as.numeric(scale(.x)))
+ )
+
+# 2. Reajustar los modelos mixtos utilizando el dataframe escalado
+modelo_ck_sc <- lmer(`mean-firm-ck` ~ max.triads.per.worker * credit.limit.base + (1 | run), data = df_scaled)
+modelo_capital_sc <- lmer(`mean-net-capital` ~ max.triads.per.worker * credit.limit.base + (1 | run), data = df_scaled)
+modelo_gini_sc <- lmer(`gini-index-of-firm-capital` ~ max.triads.per.worker * credit.limit.base + (1 | run), data = df_scaled)
+modelo_exits_sc <- lmer(`total-exits` ~ max.triads.per.worker * credit.limit.base + (1 | run), data = df_scaled)
+
+# 3. Generar el gráfico combinado en un solo plano con sjPlot
+plot_models(
+ modelo_ck_sc, modelo_capital_sc, modelo_gini_sc, modelo_exits_sc,
+ m.labels = c("CK", "Net Capital", "Gini", "Exits"),
+ vline.color = "gray50",
+ title = "Standardized Coefficients Across Systemic Dimensions"
+)
+
+
+
+
+# Este código no converge por lo masivo de la data
 library(gamlss)
 gamlss_model_real <- gamlss(
  formula = `mean-net-capital` ~ pb(max.triads.per.worker) + pb(credit.limit.base) + pb(max.triads.per.worker):pb(credit.limit.base),
