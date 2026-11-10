@@ -125,6 +125,10 @@ read_behaviorspace_spreadsheet <- function(file) {
  
 }
 
+
+
+
+
 df <-
  read_behaviorspace_spreadsheet(
   "Experiments/VirtEcom3 Experiment-spreadsheet.csv"
@@ -136,6 +140,14 @@ colnames(df)[12] <- "sum.debt.of.firms"
 variable.names(df)
 colnames(df)[3] <- "max.triads.per.worker"   
 colnames(df)[4] <- "credit.limit.base"   
+colnames(df)[5] <- "mean.firm.ck"
+colnames(df)[7] <- "number.of.firms"
+colnames(df)[8] <- "count.products"
+colnames(df)[13] <- "mean.net.capital"
+colnames(df)[14] <- "firms.with.commercial.capability"
+colnames(df)[15] <- "firms.with.digital.capability"
+colnames(df)[16] <- "firms.with.ai.capability"
+colnames(df)[17] <- "mean.capability.count"
 variable.names(df)
 
 library(dplyr)
