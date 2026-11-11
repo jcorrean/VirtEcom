@@ -269,7 +269,7 @@ library(ggplot2)
 df_step2000 <- df_clean %>%
  filter(step == 2000) %>%
  mutate(
-  net_capital_k = `mean-net-capital` / 1000,
+  net_capital_k = mean.net.capital / 1000,
   colapso = net_capital_k < 0,
   regimen = ifelse(net_capital_k < 0, "Systemic collapse", "Expansion / Survival")
  )
@@ -323,3 +323,54 @@ p_bifurcacion <- ggplot(df_step2000, aes(x = net_capital_k, fill = regimen)) +
  )
 
 print(p_bifurcacion)
+
+df_ss <- df %>%
+  filter(ticks == 2000)
+
+ggplot(
+  df_ss,
+  aes(
+    x = credit.limit.base,
+    y = mean.net.capital
+  )
+) +
+  geom_jitter(
+    width = 40,
+    height = 0,
+    alpha = 0.15,
+    size = 1
+  ) +
+  theme_minimal() +
+  labs(
+    x = "Credit limit",
+    y = "Net capital"
+  )
+
+df %>%
+  filter(
+    credit.limit.base == 1200,
+    ticks > 1800
+  ) %>%
+  ggplot(
+    aes(
+      x = ticks,
+      y = mean.net.capital
+    )
+  ) +
+  geom_point(alpha = .1)
+
+df_ss <- df %>%
+  filter(ticks == 2000)
+
+ggplot(
+  df_ss,
+  aes(
+    x = factor(max.triads.per.worker),
+    y = firms.with.ai.capability
+  )
+) +
+  geom_jitter(
+    width = .15,
+    alpha = .20
+  ) +
+  theme_minimal()
