@@ -150,6 +150,109 @@ colnames(df)[16] <- "firms.with.ai.capability"
 colnames(df)[17] <- "mean.capability.count"
 variable.names(df)
 
+
+library(tidyverse)
+df %>%
+  summarise(
+    min_commercial = min(firms.with.commercial.capability, na.rm = TRUE),
+    max_commercial = max(firms.with.commercial.capability, na.rm = TRUE),
+    
+    min_digital = min(firms.with.digital.capability, na.rm = TRUE),
+    max_digital = max(firms.with.digital.capability, na.rm = TRUE),
+    
+    min_ai = min(firms.with.ai.capability, na.rm = TRUE),
+    max_ai = max(firms.with.ai.capability, na.rm = TRUE),
+    
+    min_cap = min(mean.capability.count, na.rm = TRUE),
+    max_cap = max(mean.capability.count, na.rm = TRUE)
+  )
+
+library(tidyverse)
+
+df %>%
+  group_by(
+    ticks,
+    max.triads.per.worker
+  ) %>%
+  summarise(
+    commercial = mean(firms.with.commercial.capability, na.rm = TRUE),
+    digital    = mean(firms.with.digital.capability, na.rm = TRUE),
+    ai         = mean(firms.with.ai.capability, na.rm = TRUE),
+    capability = mean(mean.capability.count, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    cols = c(commercial, digital, ai, capability),
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  ggplot(
+    aes(
+      x = ticks,
+      y = value,
+      color = factor(max.triads.per.worker)
+    )
+  ) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~ metric, scales = "free_y") +
+  labs(
+    x = "Tick",
+    y = "Mean value",
+    color = "Max triads",
+    title = "Evolution of capability indicators"
+  ) +
+  theme_minimal()
+
+df %>%
+  filter(ticks == 2000) %>%
+  group_by(
+    max.triads.per.worker,
+    credit.limit.base
+  ) %>%
+  summarise(
+    ai = mean(firms.with.ai.capability),
+    capability = mean(mean.capability.count)
+  )
+
+
+df_ss <- df %>%
+  filter(ticks == 2000)
+
+fit <- aov(
+  firms.with.ai.capability ~
+    factor(max.triads.per.worker) *
+    factor(credit.limit.base),
+  data = df_ss
+)
+
+summary(fit)
+
+library(effectsize)
+
+eta_squared(
+  fit,
+  partial = TRUE
+)
+
+df_ss %>%
+  group_by(
+    max.triads.per.worker,
+    credit.limit.base
+  ) %>%
+  summarise(
+    ai = mean(firms.with.ai.capability),
+    .groups = "drop"
+  ) %>%
+  ggplot(
+    aes(
+      factor(max.triads.per.worker),
+      factor(credit.limit.base),
+      fill = ai
+    )
+  ) +
+  geom_tile()
+
+
 library(dplyr)
 df_clean <- as.data.frame(df) %>%
  mutate(
