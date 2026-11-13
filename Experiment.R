@@ -167,6 +167,141 @@ df %>%
     max_cap = max(mean.capability.count, na.rm = TRUE)
   )
 
+
+df_clean <- as.data.frame(df) %>%
+  mutate(
+    run = as.integer(run),
+    step = as.integer(step),
+    max.triads.per.worker = as.numeric(max.triads.per.worker),
+    credit.limit.base = as.numeric(credit.limit.base),
+    firms.with.commercial.capability = as.numeric(firms.with.commercial.capability),
+    firms.with.digital.capability = as.numeric(firms.with.digital.capability),
+    firms.with.ai.capability = as.numeric(firms.with.ai.capability),
+    mean.capability.count = as.numeric(mean.capability.count)
+  )
+
+# Filtrar corte transversal en estado estacionario (Tick 2000)
+df_ss <- df_clean %>%
+  filter(step == 2000)
+
+
+# ------------------------------------------------------------------
+# 2. ANÁLISIS DESCRIPTIVO DE LAS CAPACIDADES DE INNOVACIÓN (TICK 2000)
+# ------------------------------------------------------------------
+cat("\n=== ESTADÍSTICOS DE CAPACIDADES EN ESTADO ESTACIONARIO (TICK 2000) ===\n")
+resumen_capacidades <- df_ss %>%
+  summarise(
+    Media_Commercial = mean(firms.with.commercial.capability, na.rm = TRUE),
+    Media_Digital    = mean(firms.with.digital.capability, na.rm = TRUE),
+    Media_AI         = mean(firms.with.ai.capability, na.rm = TRUE),
+    Media_Portafolio = mean(mean.capability.count, na.rm = TRUE),
+    SD_AI            = sd(firms.with.ai.capability, na.rm = TRUE),
+    SD_Portafolio    = sd(mean.capability.count, na.rm = TRUE)
+  )
+print(resumen_capacidades)
+
+
+# ------------------------------------------------------------------
+# 3. EVALUACIÓN FACTORIAL (ANOVA Y TAMAÑOS DE EFECTO) PARA AI & COMPLEXITY
+# ------------------------------------------------------------------
+fit_ai <- aov(
+  firms.with.ai.capability ~
+    factor(max.triads.per.worker) *
+    factor(credit.limit.base),
+  data = df_ss
+)
+
+cat("\n=== ANOVA: FIRMAS CON CAPACIDAD DE IA ===\n")
+print(summary(fit_ai))
+
+cat("\n=== TAMAÑOS DE EFECTO (ETA CUADRADO PARCIAL) ===\n")
+print(eta_squared(fit_ai, partial = TRUE))
+
+
+# ------------------------------------------------------------------
+# 4. MODELOS MIXTOS (LMM) AMPLIADOS PARA CAPACIDADES Y PORTAFOLIO
+# ------------------------------------------------------------------
+# Evaluamos cómo el límite cognitivo (MT) y el crédito (CB) modulan 
+# la densidad de capacidades de IA y el conteo medio de capacidades a lo largo del tiempo.
+
+lmm_ai <- lmer(
+  firms.with.ai.capability ~ max.triads.per.worker * credit.limit.base + (1 | run),
+  data = df_clean
+)
+
+lmm_portfolio <- lmer(
+  mean.capability.count ~ max.triads.per.worker * credit.limit.base + (1 | run),
+  data = df_clean
+)
+
+cat("\n=== RESUMEN LMM: CAPACIDAD DE IA ===\n")
+print(summary(lmm_ai))
+
+cat("\n=== RESUMEN LMM: CONTEO MEDIO DE CAPACIDADES ===\n")
+print(summary(lmm_portfolio))
+
+
+# ------------------------------------------------------------------
+# 5. VISUALIZACIONES PARA EL MANUSCRITO (ESTÁNDAR JIK / JASSS)
+# ------------------------------------------------------------------
+
+# A. Evolución temporal de capacidades segmentada por restricciones cognitivas
+p_evolucion_caps <- df_clean %>%
+  group_by(step, max.triads.per.worker) %>%
+  summarise(
+    commercial = mean(firms.with.commercial.capability, na.rm = TRUE),
+    digital    = mean(firms.with.digital.capability, na.rm = TRUE),
+    ai         = mean(firms.with.ai.capability, na.rm = TRUE),
+    capability = mean(mean.capability.count, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    cols = c(commercial, digital, ai, capability),
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  ggplot(aes(x = step, y = value, color = factor(max.triads.per.worker))) +
+  geom_line(linewidth = 0.9, alpha = 0.85) +
+  facet_wrap(~ metric, scales = "free_y", labeller = label_parsed) +
+  scale_color_viridis_d(option = "plasma", name = "Max. Triads (MT)") +
+  labs(
+    x = "Simulation Steps (Ticks)",
+    y = "Mean Systemic Value",
+    title = "Trajectory of Innovation and Knowledge Capabilities Across Cognitive Regimes"
+  ) +
+  theme_linedraw(base_size = 11) +
+  theme(
+    legend.position = "bottom",
+    strip.background = element_rect(fill = "#264653"),
+    strip.text = element_text(face = "bold", color = "white")
+  )
+
+print(p_evolucion_caps)
+
+
+# B. Mapa de calor de interacción (Cognición x Crédito) sobre la adopción de IA
+p_heatmap_ai <- df_ss %>%
+  group_by(max.triads.per.worker, credit.limit.base) %>%
+  summarise(ai_mean = mean(firms.with.ai.capability, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = factor(max.triads.per.worker), y = factor(credit.limit.base), fill = ai_mean)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  scale_fill_viridis_c(option = "viridis", name = "Firms with AI Capability") +
+  labs(
+    x = "Cognitive Attention Bound (Max Triads per Worker)",
+    y = "Base Credit Facility Limit",
+    title = "Interaction of Cognitive Constraints and Credit Depth on AI Capabilities"
+  ) +
+  theme_linedraw(base_size = 11) +
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.position = "right",
+    panel.grid = element_blank()
+  )
+
+print(p_heatmap_ai)
+
+
+
 library(tidyverse)
 
 df %>%
