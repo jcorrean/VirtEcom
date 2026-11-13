@@ -323,6 +323,57 @@ print(p_combinada)
 ggsave("F1.pdf", p_combinada, width = 14, height = 7, units = "in", dpi = 300)
 
 
+library(tidyverse)
+library(patchwork)
+
+# 1. Función auxiliar para generar mapas de calor homogéneos y limpios
+crear_heatmap <- function(data, var_col, titulo_panel, leyenda_titulo) {
+  data %>%
+    group_by(max.triads.per.worker, credit.limit.base) %>%
+    summarise(val_mean = mean(.data[[var_col]], na.rm = TRUE), .groups = "drop") %>%
+    ggplot(aes(x = factor(max.triads.per.worker), y = factor(credit.limit.base), fill = val_mean)) +
+    geom_tile(color = "white", linewidth = 0.4) +
+    scale_fill_viridis_c(option = "viridis", name = leyenda_titulo) +
+    labs(
+      title = titulo_panel,
+      x = "Max. Triads (MT)",
+      y = "Credit Limit"
+    ) +
+    theme_linedraw(base_size = 10) +
+    theme(
+      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+      axis.title = element_text(size = 9),
+      legend.position = "bottom",
+      legend.key.width = unit(0.8, "cm"),
+      legend.key.height = unit(0.25, "cm"),
+      legend.title = element_text(size = 8),
+      legend.text = element_text(size = 7),
+      panel.grid = element_blank()
+    )
+}
+
+# 2. Generar los 4 mapas de calor en estado estacionario (Tick 2000)
+p_hm_comm <- crear_heatmap(df_ss, "firms.with.commercial.capability", "Commercial Capability", "Firms")
+p_hm_dig  <- crear_heatmap(df_ss, "firms.with.digital.capability",    "Digital Capability",    "Firms")
+p_hm_ai   <- crear_heatmap(df_ss, "firms.with.ai.capability",         "AI Capability",         "Firms")
+p_hm_cap  <- crear_heatmap(df_ss, "mean.capability.count",            "Mean Capability Count", "Count")
+
+# 3. Ensamblar la figura completa (Fila 1: Evolución | Fila 2: 4 Heatmaps)
+fila_inferior <- (p_hm_comm | p_hm_dig | p_hm_ai | p_hm_cap)
+
+p_figura1_completa <- (p_evolucion_caps / fila_inferior) +
+  plot_layout(heights = c(1.15, 1)) +
+  plot_annotation(
+    tag_levels = 'A',
+    theme = theme(plot.tag = element_text(face = "bold", size = 13))
+  )
+
+# Visualizar
+print(p_figura1_completa)
+
+# Exportar en alta resolución para LaTeX (ancho completo de página)
+ggsave("F1_complete.pdf", p_figura1_completa, width = 14, height = 9.5, units = "in", dpi = 300)
+
 
 library(tidyverse)
 
