@@ -250,6 +250,41 @@ print(summary(lmm_portfolio))
 # 5. VISUALIZACIONES PARA EL MANUSCRITO (ESTÁNDAR JIK / JASSS)
 # ------------------------------------------------------------------
 
+
+
+# Guardar en alta resolución para el manuscrito (PDF / TIFF / PNG a 300 DPI)
+ggsave("F1.pdf", p_combinada, width = 14, height = 7, units = "in", dpi = 300)
+
+
+library(tidyverse)
+library(patchwork)
+
+# 1. Función auxiliar para generar mapas de calor homogéneos y limpios
+crear_heatmap <- function(data, var_col, titulo_panel, leyenda_titulo) {
+  data %>%
+    group_by(max.triads.per.worker, credit.limit.base) %>%
+    summarise(val_mean = mean(.data[[var_col]], na.rm = TRUE), .groups = "drop") %>%
+    ggplot(aes(x = factor(max.triads.per.worker), y = factor(credit.limit.base), fill = val_mean)) +
+    geom_tile(color = "white", linewidth = 0.4) +
+    scale_fill_viridis_c(option = "viridis", name = leyenda_titulo) +
+    labs(
+      title = titulo_panel,
+      x = "Max. Triads (MT)",
+      y = "Credit Limit"
+    ) +
+    theme_linedraw(base_size = 10) +
+    theme(
+      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+      axis.title = element_text(size = 9),
+      legend.position = "top",
+      legend.key.width = unit(0.8, "cm"),
+      legend.key.height = unit(0.25, "cm"),
+      legend.title = element_text(size = 8),
+      legend.text = element_text(size = 7),
+      panel.grid = element_blank()
+    )
+}
+
 # A. Evolución temporal de capacidades segmentada por restricciones cognitivas
 p_evolucion_caps <- df_clean %>%
   group_by(step, max.triads.per.worker) %>%
@@ -276,81 +311,12 @@ p_evolucion_caps <- df_clean %>%
   ) +
   theme_linedraw(base_size = 11) +
   theme(
-    legend.position = "bottom",
+    legend.position = "right",
     strip.background = element_rect(fill = "#264653"),
     strip.text = element_text(face = "bold", color = "white")
   )
 
 print(p_evolucion_caps)
-
-
-# B. Mapa de calor de interacción (Cognición x Crédito) sobre la adopción de IA
-p_heatmap_ai <- df_ss %>%
-  group_by(max.triads.per.worker, credit.limit.base) %>%
-  summarise(ai_mean = mean(firms.with.ai.capability, na.rm = TRUE), .groups = "drop") %>%
-  ggplot(aes(x = factor(max.triads.per.worker), y = factor(credit.limit.base), fill = ai_mean)) +
-  geom_tile(color = "white", linewidth = 0.5) +
-  scale_fill_viridis_c(option = "viridis", name = "Firms with AI Capability") +
-  labs(
-    x = "Cognitive Attention Bound (Max Triads per Worker)",
-    y = "Base Credit Facility Limit",
-    title = ""
-  ) +
-  theme_linedraw(base_size = 11) +
-  theme(
-    plot.title = element_text(face = "bold", size = 12),
-    legend.position = "right",
-    panel.grid = element_blank()
-  )
-
-print(p_heatmap_ai)
-
-library(patchwork)
-
-# Opcional: Ajustar temas o leyendas antes de unir si es necesario
-# Combinar lado a lado con el operador '|' o '+' y controlar las etiquetas de los subgráficos (A, B)
-p_combinada <- (p_evolucion_caps | p_heatmap_ai) +
-  plot_layout(widths = c(1.4, 1)) + # Da un poco más de ancho a la evolución temporal si lo requiere
-  plot_annotation(
-    tag_levels = 'A', # Añade etiquetas automáticas (A, B) ideales para papers Q1
-    theme = theme(plot.tag = element_text(face = "bold", size = 14))
-  )
-
-# Mostrar la gráfica combinada
-print(p_combinada)
-
-# Guardar en alta resolución para el manuscrito (PDF / TIFF / PNG a 300 DPI)
-ggsave("F1.pdf", p_combinada, width = 14, height = 7, units = "in", dpi = 300)
-
-
-library(tidyverse)
-library(patchwork)
-
-# 1. Función auxiliar para generar mapas de calor homogéneos y limpios
-crear_heatmap <- function(data, var_col, titulo_panel, leyenda_titulo) {
-  data %>%
-    group_by(max.triads.per.worker, credit.limit.base) %>%
-    summarise(val_mean = mean(.data[[var_col]], na.rm = TRUE), .groups = "drop") %>%
-    ggplot(aes(x = factor(max.triads.per.worker), y = factor(credit.limit.base), fill = val_mean)) +
-    geom_tile(color = "white", linewidth = 0.4) +
-    scale_fill_viridis_c(option = "viridis", name = leyenda_titulo) +
-    labs(
-      title = titulo_panel,
-      x = "Max. Triads (MT)",
-      y = "Credit Limit"
-    ) +
-    theme_linedraw(base_size = 10) +
-    theme(
-      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-      axis.title = element_text(size = 9),
-      legend.position = "bottom",
-      legend.key.width = unit(0.8, "cm"),
-      legend.key.height = unit(0.25, "cm"),
-      legend.title = element_text(size = 8),
-      legend.text = element_text(size = 7),
-      panel.grid = element_blank()
-    )
-}
 
 # 2. Generar los 4 mapas de calor en estado estacionario (Tick 2000)
 p_hm_comm <- crear_heatmap(df_ss, "firms.with.commercial.capability", "Commercial Capability", "Firms")
@@ -372,7 +338,7 @@ p_figura1_completa <- (p_evolucion_caps / fila_inferior) +
 print(p_figura1_completa)
 
 # Exportar en alta resolución para LaTeX (ancho completo de página)
-ggsave("F1.pdf", p_figura1_completa, width = 14, height = 9.5, units = "in", dpi = 300)
+ggsave("F1.pdf", p_figura1_completa, width = 14, height = 10.5, units = "in", dpi = 300)
 
 
 library(tidyverse)
