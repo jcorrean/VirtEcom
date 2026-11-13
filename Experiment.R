@@ -372,7 +372,7 @@ p_figura1_completa <- (p_evolucion_caps / fila_inferior) +
 print(p_figura1_completa)
 
 # Exportar en alta resolución para LaTeX (ancho completo de página)
-ggsave("F1_complete.pdf", p_figura1_completa, width = 14, height = 9.5, units = "in", dpi = 300)
+ggsave("F1.pdf", p_figura1_completa, width = 14, height = 9.5, units = "in", dpi = 300)
 
 
 library(tidyverse)
