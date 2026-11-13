@@ -224,13 +224,18 @@ print(eta_squared(fit_ai, partial = TRUE))
 # Evaluamos cómo el límite cognitivo (MT) y el crédito (CB) modulan 
 # la densidad de capacidades de IA y el conteo medio de capacidades a lo largo del tiempo.
 
+
+library(lme4)
+library(lmerTest)
+library(effectsize)
+
 lmm_ai <- lmer(
-  firms.with.ai.capability ~ max.triads.per.worker * credit.limit.base + (1 | run),
+  firms.with.ai.capability ~ scale(max.triads.per.worker) * scale(credit.limit.base) + (1 | run),
   data = df_clean
 )
 
 lmm_portfolio <- lmer(
-  mean.capability.count ~ max.triads.per.worker * credit.limit.base + (1 | run),
+  mean.capability.count ~ scale(max.triads.per.worker) * scale(credit.limit.base) + (1 | run),
   data = df_clean
 )
 
