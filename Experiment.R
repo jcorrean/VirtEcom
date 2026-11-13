@@ -272,7 +272,7 @@ p_evolucion_caps <- df_clean %>%
   labs(
     x = "Simulation Steps (Ticks)",
     y = "Mean Systemic Value",
-    title = "Trajectory of Innovation and Knowledge Capabilities Across Cognitive Regimes"
+    title = ""
   ) +
   theme_linedraw(base_size = 11) +
   theme(
@@ -294,7 +294,7 @@ p_heatmap_ai <- df_ss %>%
   labs(
     x = "Cognitive Attention Bound (Max Triads per Worker)",
     y = "Base Credit Facility Limit",
-    title = "Interaction of Cognitive Constraints and Credit Depth on AI Capabilities"
+    title = ""
   ) +
   theme_linedraw(base_size = 11) +
   theme(
@@ -305,9 +305,28 @@ p_heatmap_ai <- df_ss %>%
 
 print(p_heatmap_ai)
 
+library(patchwork)
+
+# Opcional: Ajustar temas o leyendas antes de unir si es necesario
+# Combinar lado a lado con el operador '|' o '+' y controlar las etiquetas de los subgráficos (A, B)
+p_combinada <- (p_evolucion_caps | p_heatmap_ai) +
+  plot_layout(widths = c(1.4, 1)) + # Da un poco más de ancho a la evolución temporal si lo requiere
+  plot_annotation(
+    tag_levels = 'A', # Añade etiquetas automáticas (A, B) ideales para papers Q1
+    theme = theme(plot.tag = element_text(face = "bold", size = 14))
+  )
+
+# Mostrar la gráfica combinada
+print(p_combinada)
+
+# Guardar en alta resolución para el manuscrito (PDF / TIFF / PNG a 300 DPI)
+ggsave("F1.pdf", p_combinada, width = 14, height = 7, units = "in", dpi = 300)
+
 
 
 library(tidyverse)
+
+
 
 df %>%
   group_by(
