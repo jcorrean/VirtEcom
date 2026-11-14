@@ -153,7 +153,7 @@ library(ggplot2)
 df_step2000 <- df_clean %>%
  filter(step == 2000) %>%
  mutate(
-  net_capital_k = `mean-net-capital` / 1000,
+  net_capital_k = mean.net.capital / 1000,
   colapso = net_capital_k < 0,
   regimen = ifelse(net_capital_k < 0, "Systemic collapse", "Expansion / Survival")
  )
@@ -221,11 +221,13 @@ modelo_gamlss <- gamlss(
  data = df_step2000,
  trace = FALSE
 )
-
+summary(modelo_gamlss)
 # Definir los límites del eje y basados en los datos reales del paso 2000
 y.lim <- range(df_step2000$net_capital_k, na.rm = TRUE)
 
 # Aplicar tu función estándar plotSimpleGamlss adaptada a VirtEcom 3.0
+library(gamlss.util)
+library(viridis)
 plotSimpleGamlss(
  x = credit.limit.base,
  y = net_capital_k,
@@ -263,7 +265,7 @@ library(dplyr)
 # 1. Preparar el indicador binario de supervivencia
 df_step2000 <- df_step2000 %>%
  mutate(
-  net_capital_k = `mean-net-capital` / 1000,
+  net_capital_k = mean.net.capital / 1000,
   survived = if_else(net_capital_k > 0, 1, 0)
  )
 

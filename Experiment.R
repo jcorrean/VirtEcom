@@ -204,46 +204,44 @@ print(resumen_capacidades)
 # ------------------------------------------------------------------
 # 3. EVALUACIÓN FACTORIAL (ANOVA Y TAMAÑOS DE EFECTO) PARA AI & COMPLEXITY
 # ------------------------------------------------------------------
-fit_ai <- aov(
-  firms.with.ai.capability ~
-    factor(max.triads.per.worker) *
-    factor(credit.limit.base),
-  data = df_ss
-)
 
-cat("\n=== ANOVA: FIRMAS CON CAPACIDAD DE IA ===\n")
-print(summary(fit_ai))
-
-cat("\n=== TAMAÑOS DE EFECTO (ETA CUADRADO PARCIAL) ===\n")
-print(eta_squared(fit_ai, partial = TRUE))
-
-
-# ------------------------------------------------------------------
-# 4. MODELOS MIXTOS (LMM) AMPLIADOS PARA CAPACIDADES Y PORTAFOLIO
-# ------------------------------------------------------------------
-# Evaluamos cómo el límite cognitivo (MT) y el crédito (CB) modulan 
-# la densidad de capacidades de IA y el conteo medio de capacidades a lo largo del tiempo.
-
-
-library(lme4)
-library(lmerTest)
+library(tidyverse)
 library(effectsize)
 
-lmm_ai <- lmer(
-  firms.with.ai.capability ~ scale(max.triads.per.worker) * scale(credit.limit.base) + (1 | run),
-  data = df_clean
+# Filtrar corte transversal en estado estacionario (Tick 2000)
+df_ss <- df_clean %>%
+  filter(step == 2000)
+
+# Lista de las 4 variables dependientes relacionadas con innovación
+capability_vars <- c(
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
 )
 
-lmm_portfolio <- lmer(
-  mean.capability.count ~ scale(max.triads.per.worker) * scale(credit.limit.base) + (1 | run),
-  data = df_clean
-)
+# Bucle para ejecutar ANOVA y Eta Cuadrado Parcial para cada variable
+for (v in capability_vars) {
+  cat("\n=======================================================\n")
+  cat(" ANÁLISIS PARA LA VARIABLE:", v, "\n")
+  cat("=======================================================\n")
+  
+  # Construir fórmula dinámica
+  fmla <- as.formula(paste(v, "~ factor(max.triads.per.worker) * factor(credit.limit.base)"))
+  
+  # Ajustar ANOVA
+  fit <- aov(fmla, data = df_ss)
+  
+  # Mostrar resumen del ANOVA
+  print(summary(fit))
+  
+  # Calcular y mostrar tamaños de efecto (Eta cuadrado parcial)
+  cat("\n-- Tamaños de efecto (Eta cuadrado parcial) --\n")
+  es <- eta_squared(fit, partial = TRUE)
+  print(es)
+}
 
-cat("\n=== RESUMEN LMM: CAPACIDAD DE IA ===\n")
-print(summary(lmm_ai))
 
-cat("\n=== RESUMEN LMM: CONTEO MEDIO DE CAPACIDADES ===\n")
-print(summary(lmm_portfolio))
 
 
 # ------------------------------------------------------------------
@@ -341,10 +339,8 @@ print(p_figura1_completa)
 ggsave("F1.pdf", p_figura1_completa, width = 14, height = 10.5, units = "in", dpi = 300)
 
 
+# ANOVAS AND EFFECT SIZES
 library(tidyverse)
-
-
-
 df %>%
   group_by(
     ticks,
@@ -428,125 +424,205 @@ df_ss %>%
   ) +
   geom_tile()
 
+# Distribución de variables
+library(tidyverse)
+library(ggridges)
+library(ggtext)
+library(glue)
 
-library(dplyr)
-df_clean <- as.data.frame(df) %>%
- mutate(
-  run = as.integer(run),
-  step = as.integer(step),
-  max.triads.per.worker = as.numeric(max.triads.per.worker),
-  credit.limit.base = as.numeric(credit.limit.base),
-  sum.debt.of.firms = as.numeric(sum.debt.of.firms)
- )
-
-library(ggplot2)
-
-# 1. Filtrar y preparar el corte transversal en el estado estacionario (Tick 2000)
-df_step2000 <- df_clean %>%
- filter(step == 2000) %>%
- mutate(
-  net_capital_k = mean.net.capital / 1000,
-  colapso = net_capital_k < 0,
-  regimen = ifelse(net_capital_k < 0, "Systemic collapse", "Expansion / Survival")
- )
-
-# 2. Estadísticos descriptivos globales del corte transversal
-cat("=== ESTADÍSTICOS GLOBALES (TICK 2000) ===\n")
-resumen_global <- df_step2000 %>%
- summarise(
-  N = n(),
-  Media = mean(net_capital_k, na.rm = TRUE),
-  Mediana = median(net_capital_k, na.rm = TRUE),
-  Desv_Est = sd(net_capital_k, na.rm = TRUE),
-  Minimo = min(net_capital_k, na.rm = TRUE),
-  Maximo = max(net_capital_k, na.rm = TRUE),
-  Tasa_Global_Colapso = mean(colapso)
- )
-print(resumen_global)
-
-# 3. Tabla analítica de la Transición de Fase por nivel de crédito base
-cat("\n=== TASA DE COLAPSO POR NIVEL DE CRÉDITO BASE ===\n")
-tabla_transicion <- df_step2000 %>%
- group_by(credit.limit.base) %>%
- summarise(
-  Total_Corridas = n(),
-  Corridas_Colapso = sum(colapso),
-  Prop_Colapso = mean(colapso),
-  Capital_Promedio = mean(net_capital_k, na.rm = TRUE),
-  Capital_Mediano = median(net_capital_k, na.rm = TRUE)
- )
-print(tabla_transicion)
-
-# 4. Visualización de la bimodalidad facetada por diseño experimental (Estándar JASSS)
-p_bifurcacion <- ggplot(df_step2000, aes(x = net_capital_k, fill = regimen)) +
- geom_histogram(bins = 50, color = "white", alpha = 0.85) +
- facet_wrap(~ credit.limit.base, scales = "free_y", labeller = label_both) +
- scale_fill_manual(values = c("Systemic collapse" = "#e76f51", "Expansion / Survival" = "#2a9d8f")) +
- labs(
-  title = "",
-  subtitle = "",
-  x = "Net Capital (Thousands)",
-  y = "Replications",
-  fill = "Macro-Economic Regime:"
- ) +
- theme_linedraw(base_size = 12) +
- theme(
-  plot.title = element_text(face = "bold", hjust = 0.5, size = 13),
-  plot.subtitle = element_text(hjust = 0.5, size = 11),
-  legend.position = "bottom",
-  strip.background = element_rect(fill = "#264653"),
-  strip.text = element_text(face = "bold", color = "white")
- )
-
-print(p_bifurcacion)
-
-df_ss <- df %>%
-  filter(ticks == 2000)
-
-ggplot(
-  df_ss,
-  aes(
-    x = credit.limit.base,
-    y = mean.net.capital
-  )
-) +
-  geom_jitter(
-    width = 40,
-    height = 0,
-    alpha = 0.15,
-    size = 1
-  ) +
-  theme_minimal() +
-  labs(
-    x = "Credit limit",
-    y = "Net capital"
-  )
-
-df %>%
-  filter(
-    credit.limit.base == 1200,
-    ticks > 1800
+# 1. Preparar y estructurar tus datos al formato largo
+df_long <- df %>%
+  select(firms.with.ai.capability, firms.with.commercial.capability, 
+         firms.with.digital.capability, mean.capability.count) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "dimension",
+    values_to = "valor"
   ) %>%
-  ggplot(
-    aes(
-      x = ticks,
-      y = mean.net.capital
-    )
+  mutate(dimension = case_when(
+    dimension == "firms.with.ai.capability" ~ "AI Capability",
+    dimension == "firms.with.commercial.capability" ~ "Commercial Capability",
+    dimension == "firms.with.digital.capability" ~ "Digital Capability",
+    dimension == "mean.capability.count" ~ "Mean Capability Count"
+  ))
+
+# Ordenar las dimensiones
+df_long$dimension <- factor(df_long$dimension, levels = c(
+  "Mean Capability Count",
+  "Digital Capability",
+  "Commercial Capability",
+  "AI Capability"
+))
+
+median_global <- median(df_long$valor, na.rm = TRUE)
+bg_color <- "grey97"
+font_family <- "sans"
+
+# 2. Construcción del gráfico usando ggridges + tu tema original
+p <- df_long %>%
+  ggplot(aes(x = valor, y = dimension)) +
+  
+  # Distribución en gris
+  geom_density_ridges(
+    fill = "grey75", 
+    color = "grey40",     # Borde sutil para definir la silueta
+    alpha = 0.6,
+    scale = 0.9,          # Permite que las montañas se superpongan ligeramente
+    rel_min_height = 0.01 # Recorta las colas largas y planas a cero
   ) +
-  geom_point(alpha = .1)
-
-df_ss <- df %>%
-  filter(ticks == 2000)
-
-ggplot(
-  df_ss,
-  aes(
-    x = factor(max.triads.per.worker),
-    y = firms.with.ai.capability
+  
+  # Punto de la mediana
+  stat_summary(
+    geom = "point", 
+    fun = median, 
+    color = "black", 
+    size = 2, 
+    na.rm = TRUE
+  ) +
+  
+  # Línea vertical de la mediana global
+  geom_vline(
+    xintercept = median_global, 
+    col = "grey30", 
+    linetype = "dashed", 
+    linewidth = 0.5
+  ) +
+  
+  # Anotación de la mediana global
+  annotate(
+    "text", 
+    x = median_global + 0.6, 
+    y = 4.2, 
+    label = "Global median",
+    family = font_family, 
+    size = 3, 
+    hjust = 0, 
+    color = "grey30"
+  ) +
+  
+  scale_x_continuous(breaks = seq(0, 20, 5), limits = c(-1, 20)) +
+  
+  labs(
+    title = toupper("Exploratory Evaluation: Distribution of Capabilities"),
+    subtitle = glue("Comparison of densities and medians.<br>
+Useful for assessing normality assumptions versus overdispersion (Negative Binomial)."),
+    x = "Observed Value",
+    y = NULL
+  ) +
+  
+  # Aplicar el tema de Ansgar Wolsing
+  theme_minimal(base_family = font_family) +
+  theme(
+    plot.background = element_rect(color = NA, fill = bg_color),
+    panel.grid = element_blank(),
+    panel.grid.major.x = element_line(linewidth = 0.1, color = "grey75"),
+    plot.title = element_text(face = "bold", size = 13, family = font_family),
+    plot.title.position = "plot",
+    plot.subtitle = element_textbox_simple(margin = margin(t = 4, b = 16), size = 10),
+    plot.caption = element_textbox_simple(margin = margin(t = 12), size = 7),
+    plot.caption.position = "plot",
+    axis.text.y = element_text(hjust = 0, face = "bold", size = 11, color = "black"),
+    plot.margin = margin(12, 12, 12, 12)
   )
-) +
-  geom_jitter(
-    width = .15,
-    alpha = .20
-  ) +
-  theme_minimal()
+
+print(p)
+
+library(psych)
+describe.by(df_long$valor, group = df_long$dimension, mat = TRUE, digits = 3)
+
+
+# GAMLSS
+library(gamlss)
+library(gamlss.util)
+library(viridis)
+
+# Asegurar datos limpios en estado estacionario (t = 2000)
+df_step2000 <- df_clean %>% filter(step == 2000)
+
+# Lista de variables de innovación a modelar
+innovation_vars <- c(
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
+)
+
+# Bucle para ajustar GAMLSS y graficar la heteroscedasticidad condicional
+for (y_var in innovation_vars) {
+  cat("\nAjustando GAMLSS para la variable:", y_var, "\n")
+  
+  # Fórmula simplificada con suavizado penalizado para el predictor continuo x
+  f_mu <- as.formula(paste(y_var, "~ pb(credit.limit.base)"))
+  
+  # Ajustar el modelo GAMLSS usando familia Normal (NO) para admitir ceros
+  modelo_gamlss <- gamlss(
+    formula = f_mu,
+    sigma.formula = ~ pb(credit.limit.base),
+    family = NO,
+    data = df_step2000,
+    trace = FALSE
+  )
+  
+  # Definir límites del eje Y dinámicos
+  y_lim <- range(df_step2000[[y_var]], na.rm = TRUE)
+  
+  # Generar el plot usando do.call
+  dev.new() 
+  do.call(plotSimpleGamlss, list(
+    x = quote(credit.limit.base),
+    y = as.name(y_var),
+    model = modelo_gamlss,
+    data = quote(df_step2000),
+    pch = 1,
+    x.val = seq(min(df_step2000$credit.limit.base, na.rm = TRUE), 
+                max(df_step2000$credit.limit.base, na.rm = TRUE), length.out = 6),
+    val = 2000,
+    N = 500,
+    ylim = y_lim,
+    xlim = range(df_step2000$credit.limit.base, na.rm = TRUE),
+    cols = viridis_pal(begin = 0.3, end = 0.95, alpha = 0.4, option = "D", direction = 1)(100)
+  ))
+  
+  title(main = paste("GAMLSS Conditional Distribution:", y_var))
+}
+
+library(gamlss)
+
+# Asegurar datos limpios en estado estacionario (t = 2000)
+df_step2000 <- df_clean %>% filter(step == 2000)
+
+# Lista de variables de innovación
+innovation_vars <- c(
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
+)
+
+# Lista para almacenar los modelos ajustados
+gamlss_models <- list()
+
+# Bucle para calcular GAMLSS con family = TF() para cada variable de innovación
+for (y_var in innovation_vars) {
+  cat("\n=======================================================\n")
+  cat(" GAMLSS MODEL FOR:", y_var, "\n")
+  cat("=======================================================\n")
+  
+  # Construir fórmula dinámica
+  f_mu <- as.formula(paste(y_var, "~ pb(credit.limit.base)"))
+  
+  # Ajustar el modelo GAMLSS
+  modelo_gamlss <- gamlss(
+    formula = f_mu,
+    sigma.formula = ~ pb(credit.limit.base),
+    family = TF(),
+    data = df_step2000,
+    trace = FALSE
+  )
+  
+  # Guardar modelo en la lista
+  gamlss_models[[y_var]] <- modelo_gamlss
+  
+  # Imprimir resumen del modelo
+  print(summary(modelo_gamlss))
+}
