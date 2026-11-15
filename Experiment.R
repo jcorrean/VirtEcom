@@ -200,6 +200,73 @@ resumen_capacidades <- df_ss %>%
   )
 print(resumen_capacidades)
 
+df_ss %>%
+  ggplot(
+    aes(
+      x = mean.firm.ck,
+      y = mean.capability.count
+    )
+  ) +
+  geom_point(alpha = .25) +
+  geom_smooth(
+    method = "gam",
+    color = "red",
+    se = TRUE
+  ) +
+  labs(
+    x = "Mean Collective Know-How",
+    y = "Mean Capability Count"
+  ) +
+  theme_minimal()
+
+df_clean %>%
+  group_by(
+    step,
+    max.triads.per.worker
+  ) %>%
+  summarise(
+    ck = mean(mean.firm.ck),
+    .groups = "drop"
+  ) %>%
+  ggplot(
+    aes(
+      x = step,
+      y = ck,
+      color = factor(max.triads.per.worker)
+    )
+  ) +
+  geom_line() +
+  labs(
+    x = "Ticks",
+    y = "Mean Collective Know-How",
+    color = "MT"
+  ) +
+  theme_minimal()
+
+df_ss %>%
+  group_by(
+    max.triads.per.worker,
+    credit.limit.base
+  ) %>%
+  summarise(
+    ck = mean(mean.firm.ck),
+    .groups = "drop"
+  ) %>%
+  ggplot(
+    aes(
+      factor(max.triads.per.worker),
+      factor(credit.limit.base),
+      fill = ck
+    )
+  ) +
+  geom_tile(color = "white") +
+  scale_fill_viridis_c() +
+  labs(
+    x = "Max Triads",
+    y = "Credit Limit",
+    fill = "CK"
+  ) +
+  theme_minimal()
 
 # ------------------------------------------------------------------
 # 3. EVALUACIÓN FACTORIAL (ANOVA Y TAMAÑOS DE EFECTO) PARA AI & COMPLEXITY
