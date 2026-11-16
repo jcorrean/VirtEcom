@@ -308,7 +308,15 @@ for (v in capability_vars) {
   print(es)
 }
 
+fit_ck <- aov(
+  mean.firm.ck ~
+    factor(max.triads.per.worker) *
+    factor(credit.limit.base),
+  data = df_ss
+)
 
+summary(fit_ck)
+eta_squared(fit_ck)
 
 
 # ------------------------------------------------------------------

@@ -1,0 +1,450 @@
+---
+title: "Results Analysis for VirtECom 3.0"
+author: "Juan Carlos Correa Núñez"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+  pdf_document:
+    number_sections: true
+---
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(effectsize)
+library(viridis)
+library(patchwork)
+library(knitr)
+library(kableExtra)
+```
+
+# Data Loading
+
+Our data loading relies on a pre-processed file saved as an RData `data.RData`
+
+```{r, echo=FALSE}
+load("~/Documents/GitHub/VirtEcom/data.RData")
+df_clean <- as.data.frame(df) %>%
+  mutate(
+    run = as.integer(run),
+    step = as.integer(step),
+    max.triads.per.worker = as.numeric(max.triads.per.worker),
+    credit.limit.base = as.numeric(credit.limit.base),
+    firms.with.commercial.capability = as.numeric(firms.with.commercial.capability),
+    firms.with.digital.capability = as.numeric(firms.with.digital.capability),
+    firms.with.ai.capability = as.numeric(firms.with.ai.capability),
+    mean.capability.count = as.numeric(mean.capability.count)
+  )
+
+# Filtrar corte transversal en estado estacionario (Tick 2000)
+df_ss <- df_clean %>%
+  filter(step == 2000)
+
+```
+
+# 4. Results
+
+## 4.1 Emergence of Collective Know‑How
+
+### Descriptive Statistics
+
+```{r}
+df_ss %>%
+  summarise(
+    Mean_CK = mean(mean.firm.ck),
+    SD_CK   = sd(mean.firm.ck),
+    Min_CK  = min(mean.firm.ck),
+    Max_CK  = max(mean.firm.ck)
+  ) %>%
+  kable(digits = 3)
+```
+
+### Temporal Evolution of Collective Know‑How
+
+```{r fig.height=5, fig.width=8}
+p_ck_time <- df_clean %>%
+  group_by(step, max.triads.per.worker) %>%
+  summarise(
+    CK = mean(mean.firm.ck),
+    .groups = "drop"
+  ) %>%
+  ggplot(
+    aes(
+      step,
+      CK,
+      color = factor(max.triads.per.worker)
+    )
+  ) +
+  geom_line(linewidth = .9) +
+  labs(
+    x = "Simulation Step",
+    y = "Mean Collective Know-How",
+    color = "MT"
+  ) +
+  theme_minimal()
+
+p_ck_time
+```
+
+### Collective Know‑How Heatmap
+
+```{r fig.height=5, fig.width=8}
+p_ck_heatmap <- df_ss %>%
+  group_by(
+    max.triads.per.worker,
+    credit.limit.base
+  ) %>%
+  summarise(
+    CK = mean(mean.firm.ck),
+    .groups = "drop"
+  ) %>%
+  ggplot(
+    aes(
+      factor(max.triads.per.worker),
+      factor(credit.limit.base),
+      fill = CK
+    )
+  ) +
+  geom_tile(color="white") +
+  scale_fill_viridis_c() +
+  labs(
+    x = "Max Triads",
+    y = "Credit Limit",
+    fill = "CK"
+  ) +
+  theme_minimal()
+
+p_ck_heatmap
+```
+
+### Factorial ANOVA of Collective Know‑How
+
+```{r}
+fit_ck <- aov(
+  mean.firm.ck ~
+    factor(max.triads.per.worker) *
+    factor(credit.limit.base),
+  data = df_ss
+)
+
+summary(fit_ck)
+
+eta_squared(
+  fit_ck,
+  partial = TRUE
+)
+```
+
+### Interpretation
+
+The results indicate that collective know‑how emerges primarily from cognitive coordination structures. Cognitive constraints explain nearly all observed variation in collective know‑how, whereas access to credit has negligible explanatory power.
+
+---
+
+## 4.2 From Collective Know‑How to Innovation Capabilities
+
+### Relationship Between CK and Capability Formation
+
+```{r fig.height=5, fig.width=8}
+p_ck_cap <- df_ss %>%
+  ggplot(
+    aes(
+      mean.firm.ck,
+      mean.capability.count
+    )
+  ) +
+  geom_point(alpha=.25) +
+  geom_smooth(
+    method="gam",
+    color="red",
+    linewidth=1
+  ) +
+  labs(
+    x="Mean Collective Know‑How",
+    y="Mean Capability Count"
+  ) +
+  theme_minimal()
+
+p_ck_cap
+```
+
+### Interpretation
+
+Capability formation exhibits strong nonlinear threshold behaviour. Capability accumulation accelerates only after collective know‑how surpasses minimum coordination thresholds.
+
+---
+
+## 4.3 Joint Effects of Cognitive Constraints and Credit on Innovation Capabilities
+
+### Evolution of Capability Indicators
+
+```{r fig.height=8, fig.width=10}
+p_caps <- df_clean %>%
+  group_by(
+    step,
+    max.triads.per.worker
+  ) %>%
+  summarise(
+    commercial =
+      mean(firms.with.commercial.capability),
+
+    digital =
+      mean(firms.with.digital.capability),
+
+    ai =
+      mean(firms.with.ai.capability),
+
+    capability =
+      mean(mean.capability.count),
+
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    commercial:capability,
+    names_to="metric",
+    values_to="value"
+  ) %>%
+  ggplot(
+    aes(
+      step,
+      value,
+      color=factor(max.triads.per.worker)
+    )
+  ) +
+  geom_line() +
+  facet_wrap(
+    ~metric,
+    scales="free_y"
+  ) +
+  theme_minimal()
+
+p_caps
+```
+
+```{r}
+
+crear_heatmap <- function(data, var_col, titulo_panel, leyenda_titulo) {
+
+  data %>%
+    group_by(
+      max.triads.per.worker,
+      credit.limit.base
+    ) %>%
+    summarise(
+      val_mean = mean(.data[[var_col]], na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    ggplot(
+      aes(
+        x = factor(max.triads.per.worker),
+        y = factor(credit.limit.base),
+        fill = val_mean
+      )
+    ) +
+    geom_tile(color = "white") +
+    scale_fill_viridis_c() +
+    labs(
+      title = titulo_panel,
+      x = "Max Triads (MT)",
+      y = "Credit Limit",
+      fill = leyenda_titulo
+    ) +
+    theme_minimal()
+}
+
+p_hm_comm <- crear_heatmap(
+  df_ss,
+  "firms.with.commercial.capability",
+  "Commercial Capability",
+  "Firms"
+)
+
+p_hm_dig <- crear_heatmap(
+  df_ss,
+  "firms.with.digital.capability",
+  "Digital Capability",
+  "Firms"
+)
+
+p_hm_ai <- crear_heatmap(
+  df_ss,
+  "firms.with.ai.capability",
+  "AI Capability",
+  "Firms"
+)
+
+p_hm_cap <- crear_heatmap(
+  df_ss,
+  "mean.capability.count",
+  "Mean Capability Count",
+  "Count"
+)
+
+```
+
+### Capability Heatmaps
+
+```{r fig.height=8, fig.width=12}
+# reutilizar tu función crear_heatmap()
+
+p_hm_comm
+p_hm_dig
+p_hm_ai
+p_hm_cap
+
+(p_hm_comm | p_hm_dig) /
+(p_hm_ai | p_hm_cap)
+```
+
+### Factorial ANOVAs
+
+```{r}
+capability_vars <- c(
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
+)
+
+anova_results <- list()
+effect_results <- list()
+
+for(v in capability_vars){
+
+  fit <- aov(
+    as.formula(
+      paste(
+        v,
+        "~ factor(max.triads.per.worker) * factor(credit.limit.base)"
+      )
+    ),
+    data=df_ss
+  )
+
+  anova_results[[v]] <- summary(fit)
+  effect_results[[v]] <- eta_squared(
+    fit,
+    partial=TRUE
+  )
+}
+
+effect_results
+```
+
+---
+
+```{r}
+
+extract_anova <- function(var_name, data){
+
+  fit <- aov(
+    as.formula(
+      paste(
+        var_name,
+        "~ factor(max.triads.per.worker) * factor(credit.limit.base)"
+      )
+    ),
+    data = data
+  )
+
+  aov_tab <- as.data.frame(
+    summary(fit)[[1]]
+  )[1:3, ]
+
+  eta_tab <- as.data.frame(
+    eta_squared(
+      fit,
+      partial = TRUE
+    )
+  )
+
+  tibble(
+    Outcome = var_name,
+    Effect = c(
+      "Max Triads (MT)",
+      "Credit Limit",
+      "MT × Credit"
+    ),
+    Df = aov_tab$Df,
+    F = round(aov_tab$`F value`, 3),
+    p = signif(aov_tab$`Pr(>F)`, 3),
+
+    Eta2_p = round(
+      eta_tab$Eta2_partial,
+      3
+    )
+  )
+}
+
+outcomes <- c(
+  "mean.firm.ck",
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
+)
+
+anova_results <- purrr::map_dfr(
+  outcomes,
+  extract_anova,
+  data = df_ss
+)
+
+anova_results %>%
+  mutate(
+    Outcome = recode(
+      Outcome,
+      "mean.firm.ck" = "Collective Know-How",
+      "firms.with.commercial.capability" = "Commercial Capability",
+      "firms.with.digital.capability" = "Digital Capability",
+      "firms.with.ai.capability" = "AI Capability",
+      "mean.capability.count" = "Mean Capability Count"
+    ),
+    p = ifelse(
+      p < .001,
+      "<0.001",
+      format(round(p,3), nsmall = 3)
+    )
+  ) %>%
+  kable(
+    digits = 3,
+    caption =
+      "Factorial ANOVA and partial effect sizes for collective know-how and innovation capability outcomes"
+  )
+```
+
+
+
+
+## 4.4 System-Level Outcomes
+
+### Market Structure
+
+```{r}
+df_ss %>%
+  summarise(
+    Firms = mean(number.of.firms),
+    Products = mean(count.products),
+    NetCapital = mean(mean.net.capital),
+    Debt = mean(sum.debt.of.firms)
+  ) %>%
+  kable(digits=3)
+```
+
+### Interpretation
+
+Differences in coordination capacity not only affect capability formation but also generate distinct system-wide outcomes regarding firm survival, productive diversity and capital accumulation.
+
+---
+
+# Discussion-Oriented Summary
+
+1. Cognitive constraints strongly determine collective know‑how.
+2. Collective know‑how exhibits threshold dynamics.
+3. Innovation capabilities emerge from collective know‑how rather than directly from credit.
+4. Financial resources amplify outcomes but do not create collective know‑how.
+5. Collective know‑how acts as the generative mechanism linking distributed worker knowledge to organizational innovation capabilities.
