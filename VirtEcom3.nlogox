@@ -663,82 +663,96 @@ end
   </widgets>
   <info><![CDATA[## WHAT IS IT?
 
-VirtEcom 2.1 (Bounded Economic Complexity & Scarce Know-How Model) is an agent-based simulation that demonstrates the emergence of economic complexity and organizational know-how within a competitive digital market. The model explains how firms construct capability portfolios through internal coordination networks of workers subject to strict cognitive limits and non-linear administrative costs. 
+**VIRTECOM 3.0** (*From Knowledge to Innovation Capabilities: An Agent-Based Exploration of Coordination and Credit Constraints*) is an agent-based model that simulates how distributed individual expertise is transformed into organizational innovation capabilities through emergent collective know-how ($CK$).
 
-Unlike previous versions where collective know-how grew infinitely or the ecosystem collapsed into systemic extinction, Version 2.1 achieves a stable Schumpeterian regime characterized by creative destruction, continuous firm turnover, vertical product differentiation, and scarce economic complexity grounded in the principles of Hidalgo & Hausmann (2009).
+The model examines the joint effects of two structural constraints:
+1. **Cognitive coordination limits:** Workers possess bounded attentional capacity and can participate in a limited number of active knowledge-integration triads simultaneously (`max-triads-per-worker`).
+2. **Financial credit depth:** Firms finance payroll, maintenance, and non-linear coordination costs through endogenous revenues and exogenous credit lines (`credit-limit-base`).
+
+Unlike models where capabilities are treated as exogenous endowments or accumulate linearly with capital, VIRTECOM 3.0 provides a computational microfoundation demonstrating that organizational capabilities emerge through discontinuous, threshold-driven phase transitions.
 
 ## HOW IT WORKS
 
-The global behavior of the system emerges from the interaction among four agent breeds (firms, workers, products, customers) and two link breeds (coordinations, offers):
+The simulation unfolds on a $33 \times 33$ toroidal grid across discrete time steps (ticks) involving four agent breeds (`workers`, `firms`, `products`, `customers`) and two link breeds (`coordinations`, `offers`). Each simulation cycle executes four sequential modules:
 
-* **Cognitive Constraints and Triadic Worker Networks:** Each worker possesses a specific skill (marketing, payments, customer-service, data-analytics, cloud-computing, ai-recommendation). Coordination among workers forms triads of complementary skills. To prevent unconstrained knowledge growth, each worker has finite cognitive capacity and can participate in a maximum of 3 active triads simultaneously (max-triads-per-worker = 3).
-* **Organic Know-How Decay:** Coordination links between workers degrade over time (knowhow-decay-rate = 0.01). If a firm fails to validate its products in the market through sales, its internal knowledge network disintegrates.
-* **Path-Dependent Capability Building:** Collective Know-How (CK) is calculated from active triads weighted by link strength. Firms unlock capabilities (commercial-capability, digital-capability, ai-capability) only when their CK exceeds specific complexity thresholds and they possess the required skill set.
-* **Product Competition and Logit Choice:** When a product is created, its quality (Q) is locked to the firm's current CK. Price is set based on required capabilities and quality. Consumers choose products via a probabilistic Logit choice utility function that weights relative quality against price sensitivity (market-price-sensitivity). Consumer budgets replenish periodically but incur a tax/leakage rate (tax-rate = 0.03) to prevent infinite market liquidity accumulation.
-* **Non-Linear Costs and Industrial Selection:** Firms pay payroll, catalog maintenance, and a non-linear administrative cost for managing internal complexity ($C_{coord} = \alpha \cdot CK^{1.1}$). If capital turns negative, firms rely on debt financing. If capital is <= 0 and debt exceeds the maximum threshold (1200), the firm goes bankrupt and its assets disappear. Entrepreneurial entry occurs via imitation of market leaders (Role Model Entry) or spontaneously when market density shrinks (count firms < 5), preventing absorbing extinction states.
+1. **Knowledge Integration and Organizational Learning:**
+   - **Network Decay (`decay-coordination-network`):** Existing worker coordination links weaken over time unless reinforced through active production.
+   - **Bounded Triadic Growth (`grow-bounded-network`):** Workers holding complementary skills form closed triads ($K_3$ cliques) strictly bounded by `max-triads-per-worker` ($MT$).
+   - **Collective Know-How Formation (`calculate-scarce-ck`):** Firm-level collective know-how is computed as $CK_f = \sum_{\tau \in \Delta_f} \overline{\sigma}_\tau$, where $\Delta_f$ is the set of valid skill triads and $\overline{\sigma}_\tau \in (0, 1]$ is the mean tie strength of triad $\tau$.
+   - **Capability Portfolio Construction (`build-capabilities`):** Firms unlock **Commercial**, **Digital**, and **AI** capabilities only after $CK_f$ crosses domain-specific complexity thresholds and required worker skills are integrated.
+   - **Workforce Adaptation (`adapt-workforce`):** Firms adjust staffing based on financial solvency and operational requirements.
+
+2. **Innovation and Market Processes:**
+   - **Product Emergence (`create-emergent-products`):** Firms launch differentiated products whose quality scales with $CK_f$ and capability portfolios.
+   - **Demand & Competition (`replenish-and-drain-budgets`, `compete-and-consume`):** Customers evaluate available offerings via probabilistic utility choice subject to budget constraints.
+   - **Non-Linear Coordination Costs (`pay-non-linear-costs`):** Maintaining internal knowledge integration incurs a super-linear administrative cost $C_{coord} = \gamma (CK_f)^{1.1}$ with $\gamma = 0.2$.
+
+3. **Financial Selection and Organizational Survival:**
+   - **Credit Absorption (`absorb-deficit-with-credit`):** Liquidity deficits ($capital_f < 0$) convert into debt obligations ($debt_f \leftarrow debt_f + |capital_f|$), while positive revenues prioritize debt repayment before capital accumulation.
+   - **Exit & Renewal (`seller-exit`, `entrepreneurial-entry`):** Firms exit when $debt_f > \text{credit-limit-base}$. Entrepreneurial entry replicates successful capability configurations, sustaining Schumpeterian market renewal.
+
+4. **Observation and System Reporting:**
+   - Updates systemic indicators for collective know-how, capability adoption, market capital, debt exposure, and firm turnover.
 
 ## HOW TO USE IT
 
 ### Control Buttons
-* **setup:** Resets the environment, clears metrics, and initializes the population of firms, workers, customers, and initial products.
-* **go:** Runs the simulation step-by-step continuously.
+- **setup:** Initializes the toroidal environment, creates $N_{\text{sellers}}$ initial firms (each endowed with 6 specialized workers), generates $N_{\text{customers}}$ buyer agents, and resets all global metrics.
+- **go (once / forever):** Advances the simulation by a single tick or runs continuously (standard evaluation horizon: $t = 2000$ ticks).
 
-### Sliders
-* **Number-of-Sellers:** Sets the initial number of selling firms upon setup (default: 5).
-* **Number-of-Customers:** Sets the number of customer agents in the market (default: 30).
+### Sliders (Experimental Parameters)
+- **Number-of-Sellers:** Sets the initial number of competing firms at $t = 0$ (default: `5`).
+- **Number-of-Customers:** Sets the population size of heterogeneous buyers (default: `30`).
+- **max-triads-per-worker ($MT$):** Governs worker attentional bandwidth—the maximum number of simultaneous knowledge triads a worker can sustain (experimental grid: `1, 2, 3, 5, 8, 999`; default: `3`).
+- **credit-limit-base ($CB$):** Sets the maximum debt threshold before firm insolvency and market exit (experimental grid: `200, 500, 800, 1200, 1500, 2000`; default: `800`).
 
-### Monitoring Plots
-* **Mean CK:** Displays the evolution of average Collective Know-How across active firms.
-* **Total Market Capital:** Plots the total aggregated capital accumulated by the business sector.
-* **Total Exits / Entries:** Quantitatively compares cumulative bankruptcy exits (Exits, red line) against new startup creations (Created, blue line).
-
-### World View
-* **Blue/Violet Circles (firms):** Represent firms. Their size scales dynamically with accumulated CK.
-* **Colored People Icons (workers):** Workforce units grouped around their employer firms, connected by black coordination links.
-* **Green Boxes (products):** Products offered in the market with labels indicating type and quality level Q.
-* **Red People Icons (customers):** Buyer agents moving around searching and consuming products.
+### Monitors and Plots
+- **Mean CK:** Tracks the longitudinal trajectory of average Collective Know-How across active firms.
+- **Total Market Capital:** Plots aggregate net capital accumulated across surviving firms.
+- **Total Exits / Entries:** Compares cumulative bankruptcy exits (`Exits`, red) against entrepreneurial startups (`Created`, blue).
+- **Firms / Active Product Diversity / Gini of Capital:** Monitors active firm population, distinct product offerings, and capital concentration in real time.
+- *(Recommended Dashboard Additions)*: **Innovation Capabilities Plot** tracking `firms.with.commercial.capability`, `firms.with.digital.capability`, and `firms.with.ai.capability`, alongside a monitor for `mean.capability.count`.
 
 ## THINGS TO NOTICE
 
-* **Stationary Mean CK Plateau:** Notice how the Mean CK plot stabilizes into a fluctuating plateau between 1.5 and 3.5 instead of exploding toward 70. This confirms that know-how has become a scarce, costly-to-coordinate resource.
-* **Parallel Entry and Exit Trajectories:** Observe how the Created and Exits curves in the industrial dynamics plot run parallel over thousands of ticks, demonstrating a steady-state flow of creative destruction without market collapse or permanent monopoly.
-* **Vertical Product Differentiation:** Inspect product labels in the view (Q: 3.1, Q: 4.5). High-CK firms launch higher-quality offerings that capture quality-sensitive consumers.
-* **Sparse Organizational Networks:** Look at the network topology around firms: worker networks form sparse, bounded structures rather than saturated complete graphs due to the 3-triad limit per worker.
+- **Cognitive Coordination Traps ($MT \le 2$):** Set `max-triads-per-worker` to `1` or `2` and run the model. Regardless of how high you set `credit-limit-base`, `Mean CK` remains trapped near zero and firms fail to develop innovation capabilities.
+- **Critical Transition Regime ($MT = 3$):** At `max-triads-per-worker = 3`, the system enters a sensitive transition zone where commercial and digital capabilities gradually emerge and financial credit depth noticeably modulates firm survival and capability dispersion.
+- **Saturation and Diminishing Returns ($MT \ge 5$):** Increasing `max-triads-per-worker` to `5`, `8`, or `999` triggers rapid accumulation of `Mean CK` and full capability portfolios (Commercial, Digital, and AI), after which additional attentional capacity yields diminishing marginal gains due to super-linear coordination costs ($C_{coord} = 0.2 \cdot CK_f^{1.1}$).
+- **Hierarchy of Capability Complexity:** Observe that Commercial capabilities emerge earliest and at lower $CK$ thresholds, followed by Digital capabilities, whereas AI capabilities require the highest levels of collective know-how integration.
 
 ## THINGS TO TRY
 
-* **Adjusting Tax Leakage (tax-rate):** Change `set tax-rate 0.03` to `0.08` or `0.00` in the code tab to see how market liquidity influences bankruptcy rates and firm longevity.
-* **Varying Worker Cognitive Capacity:** Change `set max-triads-per-worker 3` to `1` or `5`. Check whether relaxing this bottleneck triggers runaway CK growth.
-* **Modifying Price Sensitivity (market-price-sensitivity):** Increase price sensitivity to observe if the market penalizes high-quality, high-price offerings in favor of low-cost alternatives.
-* **Testing Know-How Decay:** Increase `knowhow-decay-rate` to `0.03` to simulate rapid technological obsolescence where firms lose capabilities if sales halt.
+- **Test the "Money Cannot Buy Coordination" Hypothesis:** Set `max-triads-per-worker = 2` and `credit-limit-base = 2000`. Observe that abundant credit cannot compensate for insufficient worker-level knowledge integration.
+- **Explore Financial Amplification in the Transition Zone:** Fix `max-triads-per-worker = 3` and compare runs at `credit-limit-base = 200` versus `credit-limit-base = 2000` over 2,000 ticks to observe how credit buffers early coordination deficits.
+- **Inspect Unconstrained Attention ($MT = 999$):** Compare `max-triads-per-worker = 5` against `999` to see how super-linear coordination costs ($CK^{1.1}$) self-regulate organizational complexity even when cognitive caps are removed.
 
 ## EXTENDING THE MODEL
 
-* **Heterogeneous Demand Segmentation:** Classify customers into distinct segments (e.g., enterprise clients vs. retail consumers) with contrasting budgets and quality preferences.
-* **Labor Market & Talent Mobility:** Allow workers to resign or be headhunted by rival firms offering higher wages or better financial stability.
-* **Explicit R&D & Training Investments:** Introduce decision rules where firms re-invest a fraction of profits into worker training or acquiring missing skills from the universe.
-* **Exporting Network Metrics:** Export the bipartite firm-product matrix to Neo4j or R (igraph/tidygraph) to calculate Reflection Method metrics (KC1, KP1) externally.
+- **Heterogeneous Skill Endowments:** Introduce asymmetric skill distributions or endogenous worker upskilling through targeted R&D investments.
+- **Inter-Firm Labor Mobility:** Allow workers to transition across firms, carrying tacit coordination experience and altering network topologies.
+- **Dynamic Credit Endogeneity:** Link firm credit lines endogenously to historical profitability, collateral, or demonstrated capability portfolios rather than a fixed institutional ceiling.
+- **External Network & Distributional Auditing:** Export simulation outputs via BehaviorSpace to R (`gamlss`, `tidygraph`) or Neo4j to analyze distributional heteroscedasticity and bipartite firm–capability networks.
 
 ## NETLOGO FEATURES
 
-* **Use of undirected-link-breed:** Separate management of social/cognitive worker links (coordinations) and commercial offer links between firms and products (offers).
-* **Efficient 3-Clique (Triad) Detection:** Custom algorithms inspecting worker triples to detect K3 patterns and evaluate cohesive collective knowledge.
-* **Logit Choice Implementation with max-one-of:** Stochastic purchasing selection evaluating continuous quality utility against budget constraints.
-* **Agent Hierarchy via hatch and Ownership:** Using hatching commands to anchor worker and product agents to parent firm entities using unique identifiers (employer-id, originating-firm).
+- **Undirected Link Breeds (`coordinations` and `offers`):** Separates internal intra-organizational knowledge ties from external market offerings.
+- **Triadic Closure ($K_3$) Detection:** Evaluates closed worker triples with complementary skills to compute weighted collective know-how ($CK_f$).
+- **ODD Protocol Compliance:** Structured following Grimm et al. (2006) and Railsback & Grimm (2019) to ensure full computational transparency and replicability.
 
 ## RELATED MODELS
 
-* **Hidalgo & Hausmann Economic Complexity Models:** Bipartite country-product and product space network models.
-* **Nelson & Winter Evolutionary Economics Models:** Simulations of industrial dynamics, organizational routines, and market selection.
-* **Sugarscape with Money & Trade (Epstein & Axtell):** Agent-based models of wealth accumulation, consumption, and market cycles.
+- **Hidalgo & Hausmann Economic Complexity Framework:** Bipartite capability-product models of productive sophistication.
+- **Nelson & Winter Evolutionary Economics Models:** Agent-based simulations of organizational routines, innovation search, and Schumpeterian selection.
 
 ## CREDITS AND REFERENCES
 
-* Antonelli, C., & Ferraris, G. (2011). Innovation as an emerging system property: an agent based simulation model. *Journal of Artificial Societies and Social Simulation*, 14(2), 1.
-* Bruun, C. (2003). The Economy as an Agent-Based Whole: Simulating Schumpeterian Dynamics. *Industry and Innovation*, 10(4), 475-491.
-* Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570-10575.
-* Li, T., Wang, S., Zhou, D., & Razzaq, A. (2025). Consumer attention and market concentration in e-commerce: an agent-based perspective. *Journal of Economic Interaction and Coordination*, 20, 959-985.
-* Pyka, A., & Fagiolo, G. (2007). Agent-Based Modelling: A Methodology for Neo-Schumpeterian Economics. In Hanusch & Pyka (Eds.), *Elgar Companion to Neo-Schumpeterian Economics*. Edward Elgar Publishing.]]></info>
+- **Authors:** Juan C. Correa (Universidad Iberoamericana), Wilmer Garzón-Alfonso (Escuela Colombiana de Ingeniería Julio Garavito), and María del Pilar García-Chitiva (Instituto Politécnico Grancolombiano).
+- **Manuscript:** Correa, J. C., Garzón-Alfonso, W., & García-Chitiva, M. P. (2026). *From knowledge to innovation capabilities: An agent-based exploration of coordination and credit constraints*.
+- Bruun, C. (2003). The economy as an agent-based whole – Simulating Schumpeterian Dynamics. *Industry and Innovation*, 10(4), 475–491.
+- Grimm, V., et al. (2006). A standard protocol for describing individual-based and agent-based models. *Ecological Modelling*, 198(1–2), 115–126.
+- Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570–10575.
+- Kauppila, O. P., & Vaara, E. (2026). Triadic attentional processing and buildup of joint attentional engagement in emergent strategic initiatives. *Academy of Management Review*.
+- Stasinopoulos, M. D., Rigby, R. A., Heller, G. Z., Voudouris, V., & De Bastiani, F. (2017). *Flexible Regression and Smoothing Using GAMLSS in R*. CRC Press.]]></info>
   <turtleShapes>
     <shape name="default" rotatable="true" editableColorIndex="0">
       <polygon color="-1920102913" filled="true" marked="true">
