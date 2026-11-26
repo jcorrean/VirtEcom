@@ -149,10 +149,392 @@ eta_squared(
 )
 ```
 
-### Interpretation
+
 
 The results indicate that collective know‑how emerges primarily from cognitive coordination structures. Cognitive constraints explain nearly all observed variation in collective know‑how, whereas access to credit has negligible explanatory power.
 
+### From Collective Know‑How to Innovation Capabilities
+
+#### Relationship Between CK and Capability Formation
+
+```{r}
+p_ck_cap <- df_ss %>%
+  ggplot(
+    aes(
+      mean.firm.ck,
+      mean.capability.count
+    )
+  ) +
+  geom_point(alpha=.25) +
+  geom_smooth(
+    method="gam",
+    color="red",
+    linewidth=1
+  ) +
+  labs(
+    x="Mean Collective Know‑How",
+    y="Mean Capability Count"
+  ) +
+  theme_minimal()
+
+p_ck_cap
+```
+
+Capability formation exhibits strong nonlinear threshold behaviour. Capability accumulation accelerates only after collective know‑how surpasses minimum coordination thresholds.
 
 
+### Joint Effects of Cognitive Constraints and Credit on Innovation Capabilities
 
+### Evolution of Capability Indicators
+
+```{r}
+p_caps <- df_clean %>%
+  group_by(
+    step,
+    max.triads.per.worker
+  ) %>%
+  summarise(
+    commercial =
+      mean(firms.with.commercial.capability),
+
+    digital =
+      mean(firms.with.digital.capability),
+
+    ai =
+      mean(firms.with.ai.capability),
+
+    capability =
+      mean(mean.capability.count),
+
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    commercial:capability,
+    names_to="metric",
+    values_to="value"
+  ) %>%
+  ggplot(
+    aes(
+      step,
+      value,
+      color=factor(max.triads.per.worker)
+    )
+  ) +
+  geom_line() +
+  facet_wrap(
+    ~metric,
+    scales="free_y"
+  ) +
+ labs(color = "MT") +
+ theme_minimal()
+
+p_caps
+```
+
+```{r}
+crear_heatmap <- function(data, var_col, titulo_panel, leyenda_titulo) {
+
+  data %>%
+    group_by(
+      max.triads.per.worker,
+      credit.limit.base
+    ) %>%
+    summarise(
+      val_mean = mean(.data[[var_col]], na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    ggplot(
+      aes(
+        x = factor(max.triads.per.worker),
+        y = factor(credit.limit.base),
+        fill = val_mean
+      )
+    ) +
+    geom_tile(color = "white") +
+    scale_fill_viridis_c() +
+    labs(
+      title = titulo_panel,
+      x = "Max Triads (MT)",
+      y = "Credit Limit",
+      fill = leyenda_titulo
+    ) +
+    theme_minimal()
+}
+
+p_hm_comm <- crear_heatmap(
+  df_ss,
+  "firms.with.commercial.capability",
+  "Commercial Capability",
+  "Firms"
+)
+
+p_hm_dig <- crear_heatmap(
+  df_ss,
+  "firms.with.digital.capability",
+  "Digital Capability",
+  "Firms"
+)
+
+p_hm_ai <- crear_heatmap(
+  df_ss,
+  "firms.with.ai.capability",
+  "AI Capability",
+  "Firms"
+)
+
+p_hm_cap <- crear_heatmap(
+  df_ss,
+  "mean.capability.count",
+  "Mean Capability Count",
+  "Count"
+)
+```
+
+### Capability heatmaps
+
+```{r}
+(p_hm_comm | p_hm_dig) /
+(p_hm_ai | p_hm_cap)
+```
+
+### Factorial ANOVAs
+
+```{r}
+capability_vars <- c(
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
+)
+
+anova_results <- list()
+effect_results <- list()
+
+for(v in capability_vars){
+
+  fit <- aov(
+    as.formula(
+      paste(
+        v,
+        "~ factor(max.triads.per.worker) * factor(credit.limit.base)"
+      )
+    ),
+    data=df_ss
+  )
+
+  anova_results[[v]] <- summary(fit)
+  effect_results[[v]] <- eta_squared(
+    fit,
+    partial=TRUE
+  )
+}
+
+effect_results
+
+extract_anova <- function(var_name, data){
+
+  fit <- aov(
+    as.formula(
+      paste(
+        var_name,
+        "~ factor(max.triads.per.worker) * factor(credit.limit.base)"
+      )
+    ),
+    data = data
+  )
+
+  aov_tab <- as.data.frame(
+    summary(fit)[[1]]
+  )[1:3, ]
+
+  eta_tab <- as.data.frame(
+    eta_squared(
+      fit,
+      partial = TRUE
+    )
+  )
+
+  tibble(
+    Outcome = var_name,
+    Effect = c(
+      "Max Triads (MT)",
+      "Credit Limit",
+      "MT × Credit"
+    ),
+    Df = aov_tab$Df,
+    F = round(aov_tab$`F value`, 3),
+    p = signif(aov_tab$`Pr(>F)`, 3),
+
+    Eta2_p = round(
+      eta_tab$Eta2_partial,
+      3
+    )
+  )
+}
+
+outcomes <- c(
+  "mean.firm.ck",
+  "firms.with.commercial.capability",
+  "firms.with.digital.capability",
+  "firms.with.ai.capability",
+  "mean.capability.count"
+)
+
+anova_results <- purrr::map_dfr(
+  outcomes,
+  extract_anova,
+  data = df_ss
+)
+
+anova_results %>%
+  mutate(
+    Outcome = recode(
+      Outcome,
+      "mean.firm.ck" = "Collective Know-How",
+      "firms.with.commercial.capability" = "Commercial Capability",
+      "firms.with.digital.capability" = "Digital Capability",
+      "firms.with.ai.capability" = "AI Capability",
+      "mean.capability.count" = "Mean Capability Count"
+    ),
+    p = ifelse(
+      p < .001,
+      "<0.001",
+      format(round(p,3), nsmall = 3)
+    )
+  ) %>%
+  kable(
+    digits = 3,
+    caption =
+      "Factorial ANOVA and partial effect sizes for collective know-how and innovation capability outcomes"
+  )
+
+```
+
+## System-Level Outcomes
+
+### Market Structure
+
+```{r}
+df_ss %>%
+  summarise(
+    Firms = mean(number.of.firms),
+    Products = mean(count.products),
+    NetCapital = mean(mean.net.capital),
+    Debt = mean(sum.debt.of.firms)
+  ) %>%
+  kable(digits=3)
+```
+
+Differences in coordination capacity not only affect capability formation but also generate distinct system-wide outcomes regarding firm survival, productive diversity and capital accumulation.
+
+## Scrutiny of assumptions
+
+In order to evaluate whether previous results from a general linear model are valid or not, we now focus on examining the assumptions of the ANOVA
+
+```{r}
+library(lmtest)
+library(car)
+library(moments)
+
+auditar_glm <- function(var_name, data) {
+  fml <- as.formula(paste(var_name, "~ factor(max.triads.per.worker) * factor(credit.limit.base)"))
+  fit <- lm(fml, data = data)
+  res <- residuals(fit)
+  
+  bp <- bptest(fit)
+  sw <- shapiro.test(res)
+  
+  tibble(
+    Outcome = var_name,
+    Prop_Zeros = round(mean(data[[var_name]] == 0, na.rm = TRUE), 3),
+    Skewness = round(skewness(res), 3),
+    Kurtosis = round(kurtosis(res), 3),
+    BP_Stat = round(as.numeric(bp$statistic), 2),
+    BP_p = ifelse(bp$p.value < 0.001, "<0.001", format(round(bp$p.value, 3), nsmall = 3)),
+    SW_W = round(as.numeric(sw$statistic), 3),
+    SW_p = ifelse(sw$p.value < 0.001, "<0.001", format(round(sw$p.value, 3), nsmall = 3))
+  )
+}
+
+diagnosticos_glm <- purrr::map_dfr(outcomes, auditar_glm, data = df_ss)
+
+diagnosticos_glm %>%
+  kable(caption = "Diagnostic tests of General Linear Model assumptions (Homoscedasticity and Gaussian residuals)")
+```
+
+As expected, these results show that our variables do not behave as a normal-like distribution, leading us to introduce GAMLSS estimation in our statistical comparisons.
+
+```{r}
+library(gamlss)
+# 1. Collective Know-How (CK): GLM Normal vs GAMLSS Zero-Adjusted Gamma (ZAGA)
+m_ck_glm <- gamlss(
+  mean.firm.ck ~ factor(max.triads.per.worker) * factor(credit.limit.base),
+  family = NO(),
+  data = df_ss,
+  trace = FALSE
+)
+
+m_ck_gamlss <- gamlss(
+  mean.firm.ck ~ factor(max.triads.per.worker) * factor(credit.limit.base),
+  sigma.formula = ~ factor(max.triads.per.worker) + factor(credit.limit.base),
+  nu.formula = ~ factor(max.triads.per.worker),
+  family = ZAGA(),
+  data = df_ss,
+  trace = FALSE
+)
+
+# 2. Mean Capability Count en el régimen activo (MT >= 3, donde se supera el umbral de parálisis)
+df_active <- df_ss %>% filter(max.triads.per.worker >= 3)
+
+m_cap_glm <- gamlss(
+  mean.capability.count ~ factor(max.triads.per.worker) * factor(credit.limit.base),
+  family = NO(),
+  data = df_active,
+  trace = FALSE
+)
+
+m_cap_gamlss <- gamlss(
+  mean.capability.count ~ factor(max.triads.per.worker) * factor(credit.limit.base),
+  sigma.formula = ~ factor(max.triads.per.worker) + factor(credit.limit.base),
+  family = NO(),
+  data = df_active,
+  trace = FALSE
+)
+
+# 3. Tabla comparativa de bondad de ajuste (AIC y BIC)
+comparacion_gamlss <- tibble(
+  Outcome = c("Collective Know-How (All regimes)", "Mean Capability Count (Active regime, MT >= 3)"),
+  GLM_Family = c("Gaussian Homoscedastic (NO)", "Gaussian Homoscedastic (NO)"),
+  GLM_AIC = round(c(AIC(m_ck_glm), AIC(m_cap_glm)), 1),
+  GLM_BIC = round(c(GAIC(m_ck_glm, k = log(nrow(df_ss))), GAIC(m_cap_glm, k = log(nrow(df_active)))), 1),
+  GAMLSS_Family = c("Zero-Adjusted Gamma (ZAGA)", "Gaussian Heteroscedastic (NO)"),
+  GAMLSS_AIC = round(c(AIC(m_ck_gamlss), AIC(m_cap_gamlss)), 1),
+  GAMLSS_BIC = round(c(GAIC(m_ck_gamlss, k = log(nrow(df_ss))), GAIC(m_cap_gamlss, k = log(nrow(df_active)))), 1)
+)
+
+comparacion_gamlss %>%
+  kable(caption = "Model selection comparison between Homoscedastic GLM (ANOVA) and Heteroscedastic/Zero-Adjusted GAMLSS")
+```
+
+```{r}
+# 4. Prueba formal de Razón de Verosimilitud (LRT) en el régimen activo
+LR.test(m_cap_glm, m_cap_gamlss)
+```
+
+# 5. Diagnóstico visual de residuos cuantílicos (Worm Plots)
+```{r}
+par(mfrow = c(2, 2))
+wp(m_ck_glm, ylim.all = 1.5, main = "CK: GLM (Normal)")
+
+```
+
+```{r}
+wp(m_ck_gamlss, ylim.all = 1.5, main = "CK: GAMLSS (ZAGA)")
+wp(m_cap_glm, ylim.all = 1.5, main = "Capabilities (MT>=3): GLM")
+```
+
+```{r}
+wp(m_cap_gamlss, ylim.all = 1.5, main = "Capabilities (MT>=3): GAMLSS")
+```
+
+VEAMOS PUES
